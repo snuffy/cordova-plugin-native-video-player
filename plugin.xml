@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="" version="0.0.1">
+  <name>Cordova Plugin Native Video Player</name>
+  <description>keep awakeing</description>
+	<engines>
+		<engine name="cordova-android" version=">=7.1.0" />
+	</engines>
+  <js-module src="www/NativeVideoPlayer.js" name='NativeVideoPlayer' >
+    <clobbers target="NativeVideoPlayer" />
+  </js-module>
+
+  <!-- iOS -->
+  <platform name="ios">
+    <config-file target="config.xml" parent="/*">
+      <feature name="NativeVideoPlayer">
+        <param name="onload" value="true" />
+        <param name="ios-package" value="CDVNativeVideoPlayer" />
+      </feature>
+
+      <preference name="deployment-target" value="10.0" />
+    </config-file>
+
+    <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
+    <source-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
+
+    <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
+    <preference name="UseSwiftLanguageVersion" default="5" />
+  </platform>
+</plugin>

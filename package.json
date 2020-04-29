@@ -1,0 +1,34 @@
+{
+  "name": "cordova-plugin-native-video-player",
+  "version": "0.0.1",
+  "description": "cordova-plugin-native-video-player",
+  "cordova": {
+    "id": "cordova-plugin-native-video-player",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snuffy/cordova-plugin-native-video-player.git"
+  },
+  "author": "snuffy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/snuffy/cordova-plugin-native-video-player/issues"
+  },
+  "dependencies": {
+    "xml2js": "^0.4.19"
+  },
+  "homepage": "https://github.com/snuffy/cordova-plugin-native-video-player#readme",
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova:plugin",
+    "plugin"
+  ]
+}
