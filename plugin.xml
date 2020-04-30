@@ -23,6 +23,17 @@
     <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
     <source-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
 
+    <podspec>
+      <config>
+        <source url="https://github.com/CocoaPods/Specs.git"/>
+        <source url="https://github.com/snuffy/VGPlayer.git"/>
+      </config>
+      <pods use-frameworks="true">
+        <pod name="SnapKit" spec="~> 5.0.0" />
+        <pod name="PIPKit" spec="~> 0.2.0" />
+        <pod name="VGPlayer" version="0.3.0" />
+      </pods>
+    </podspec>
     <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
     <preference name="UseSwiftLanguageVersion" default="5" />
   </platform>
