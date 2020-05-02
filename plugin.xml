@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="" version="0.0.1">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cordova-plugin-native-video-player" version="0.0.1">
   <name>Cordova Plugin Native Video Player</name>
   <description>keep awakeing</description>
 	<engines>
@@ -20,18 +20,22 @@
       <preference name="deployment-target" value="10.0" />
     </config-file>
 
+    <header-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
     <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
-    <source-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
+    <source-file src="src/ios/CDVNativeVideoPlayerViewController.swift" />
+
+    <header-file src="src/ios/UIViewController+RotationControl.h" />
+    <source-file src="src/ios/UIViewController+RotationControl.m" />
+    
 
     <podspec>
       <config>
         <source url="https://github.com/CocoaPods/Specs.git"/>
-        <source url="https://github.com/snuffy/VGPlayer.git"/>
       </config>
       <pods use-frameworks="true">
         <pod name="SnapKit" spec="~> 5.0.0" />
         <pod name="PIPKit" spec="~> 0.2.0" />
-        <pod name="VGPlayer" version="0.3.0" />
+        <pod name="SJVideoPlayer" spec="~> 3.2.4" />
       </pods>
     </podspec>
     <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
