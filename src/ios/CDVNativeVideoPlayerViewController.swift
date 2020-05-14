@@ -27,7 +27,11 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     let pipButton = UIButton(type: .custom)
     let shrinkScreenImage = SJVideoPlayerResourceLoader.imageNamed("sj_video_player_shrinkscreen")
     let fullScreenImage = SJVideoPlayerResourceLoader.imageNamed("sj_video_player_fullscreen")
-    
+
+    // font
+    let defualtTitleFont = UIFont.systemFont(ofSize: 20, weight: .bold)
+    let pipTitleFont = UIFont.systemFont(ofSize: 11, weight: .medium)
+
     let media = MediaItem(title: "タイトル1", album: "アルバム1", source: URL(string: "http://www.hochmuth.com/mp3/Haydn_Cello_Concerto_D-1.mp3")! )
     let media2 = MediaItem(title: "タイトル2", album: "アルバム2", source: URL(string: "https://dh2.v.netease.com/2017/cg/fxtpty.mp4")!)
     
@@ -60,17 +64,19 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         createCloseButton()
         // PIP ボタン
         createPipButton()
+        // タイトルの生成
+        createTitleTextView()
+
         // remote commandEvent を作成
         addRemoteCommandEvent()
-        // pla
-        updateNowPlayingInfo();
+        // play 中の情報表示
+        updateNowPlayingInfo()
         
         // 再生が終了したらよばれれる
         player.playbackObserver.playbackDidFinishExeBlock = {[weak self] _ in
             guard let self = self else {return}
             self.nextMedia()
             return
-            
         }
     }
     
@@ -99,7 +105,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         self.pipButton.titleEdgeInsets = UIEdgeInsetsMake(2.0, 6.0, 2.0, 6.0)
         self.pipButton.tintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.pipButton.addTarget(self, action: #selector(self.tapToPip(_:)), for: .touchUpInside)
-//        self.pipButton.sizeToFit();
+        // self.pipButton.sizeToFit()
         self.view.addSubview(self.pipButton)
         self.pipButton.snp.makeConstraints { (make) in
             if #available(iOS 11, *) {
@@ -110,7 +116,6 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
             make.width.equalTo(40)
             make.height.equalTo(40)
             make.left.equalTo(self.view.snp.right).offset(-44)
-
         }
     }
     
@@ -128,14 +133,41 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         let moreImage = SJVideoPlayerResourceLoader.imageNamed("sj_video_player_more")
         let settingSwitchItem = SJEdgeControlButtonItem(image: moreImage, target: self, action: #selector(openMore), tag: 50)
         
-        
         player.defaultEdgeControlLayer.bottomAdapter.add(settingSwitchItem)
         player.defaultEdgeControlLayer.bottomAdapter.reload()
         // 自動回転のオフ
         player.rotationManager.isDisabledAutorotation = true
     }
+
+    // 音声の時はタイトルを出す
+    private func createTitleTextView() {
+        titleTextView.textColor = .white
+        view.addSubview(titleTextView)
+        titleTextView.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        titleTextView.textAlignment = .center
+        titleTextView.numberOfLines = 3
+        titleTextView.snp.makeConstraints { make in
+            make.width.equalToSuperview().inset(10)
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()
+        }
+        updateTitleTextView()
+    }
     
-    
+    // タイトルの更新を行う
+    private func updateTitleTextView() {
+        let current = playlist[currentIndex]
+        let ext = current.source.pathExtension
+        // mp3 だった時は出す
+        if (ext == "mp3") {
+            titleTextView.isHidden = false
+            titleTextView.text = current.title
+        }
+        else {
+            titleTextView.isHidden = true
+        }
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.player.vc_viewDidAppear()
@@ -164,20 +196,21 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
             closeButton.isHidden = false;
             player.defaultEdgeControlLayer.isHidden = false
             player.gestureControl.supportedGestureTypes = SJPlayerGestureTypeMask_All
+            titleTextView.font = defualtTitleFont
         } else {
             startPIPMode()
             pipButton.setImage(fullScreenImage, for: .normal)
             closeButton.isHidden = true;
             player.defaultEdgeControlLayer.isHidden = true
             player.gestureControl.supportedGestureTypes = SJPlayerGestureTypeMask_DoubleTap
+            titleTextView.font = pipTitleFont
         }
     }
-    
+    // more ボタンを押した時の挙動
     @objc func openMore() {
         self.player.switcher.switchControlLayer(forIdentitfier: SJControlLayer_MoreSettting)
     }
-    
-    
+    // 次の音声を再生する
     func nextMedia() {
         if (playlist.count-1 == currentIndex) {return}
         currentIndex += 1
@@ -190,7 +223,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         updateNowPlayingInfo()
         updateRemoteCommandCenter()
     }
-    
+    // 一つ前の音声を再生する
     func prevMedia() {
         if (currentIndex == 0) {return}
         currentIndex -= 1
