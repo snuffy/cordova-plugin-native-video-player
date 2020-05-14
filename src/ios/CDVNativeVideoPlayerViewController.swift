@@ -25,6 +25,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     var player:SJVideoPlayer!
     let closeButton = UIButton(type: .custom)
     let pipButton = UIButton(type: .custom)
+    let titleTextView = UILabel()
     let shrinkScreenImage = SJVideoPlayerResourceLoader.imageNamed("sj_video_player_shrinkscreen")
     let fullScreenImage = SJVideoPlayerResourceLoader.imageNamed("sj_video_player_fullscreen")
 
