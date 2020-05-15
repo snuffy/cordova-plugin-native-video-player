@@ -219,7 +219,8 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         let next = self.playlist[self.currentIndex]
         self.player.urlAsset = SJVideoPlayerURLAsset(url: next.source)
         self.player.play()
-        
+        // タイトルのアップデート
+        updateTitleTextView()
         // update info
         updateNowPlayingInfo()
         updateRemoteCommandCenter()
@@ -231,7 +232,8 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         let prev = self.playlist[self.currentIndex]
         self.player.urlAsset = SJVideoPlayerURLAsset(url: prev.source)
         self.player.play()
-        
+        // タイトルのアップデート
+        updateTitleTextView()
         // update info
         updateNowPlayingInfo()
         updateRemoteCommandCenter()
