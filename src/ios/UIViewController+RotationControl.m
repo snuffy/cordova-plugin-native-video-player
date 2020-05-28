@@ -1,25 +1,9 @@
-//
-//  UIViewController+RotationControl.m
-//  TestPlayer
-//
-//  Created by BlueDancer on 2019/8/28.
-//  Copyright © 2019 SanJiang. All rights reserved.
-//
-
-#import "UIViewController+RotationControl.h"
-
 @implementation UIViewController (RotationControl)
 - (BOOL)shouldAutorotate {
-#ifdef DEBUG
-    NSLog(@"%d - %s", (int)__LINE__, __func__);
-#endif
     return NO;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-#ifdef DEBUG
-    NSLog(@"%d - %s", (int)__LINE__, __func__);
-#endif
     return UIInterfaceOrientationMaskPortrait;
 }
 
@@ -67,11 +51,3 @@
     return self.topViewController;
 }
 @end
-//
-//  UIViewController+RotationControl.m
-//  HelloCordova
-//
-//  Created by shogo on 2020/05/01.
-//
-
-#import <Foundation/Foundation.h>
