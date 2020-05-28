@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cordova-plugin-native-video-player" version="0.0.1">
   <name>Cordova Plugin Native Video Player</name>
-  <description>keep awakeing</description>
+  <description>high functionaly video player plugin</description>
 	<engines>
 		<engine name="cordova-android" version=">=7.1.0" />
 	</engines>
@@ -16,18 +16,20 @@
         <param name="onload" value="true" />
         <param name="ios-package" value="CDVNativeVideoPlayer" />
       </feature>
-
-      <preference name="deployment-target" value="10.0" />
+      <preference name="deployment-target" value="11.0" />
     </config-file>
 
     <header-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
     <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
     <source-file src="src/ios/CDVNativeVideoPlayerViewController.swift" />
+    <source-file src="src/ios/CDVNVPResourcesLoader.swift" />
 
     <header-file src="src/ios/UIViewController+RotationControl.h" />
     <source-file src="src/ios/UIViewController+RotationControl.m" />
     
-
+    <!-- assets -->
+    <resource-file src="src/ios/CDVNVPResources.bundle" />
+  
     <podspec>
       <config>
         <source url="https://github.com/CocoaPods/Specs.git"/>
@@ -35,7 +37,8 @@
       <pods use-frameworks="true">
         <pod name="SnapKit" spec="~> 5.0.0" />
         <pod name="PIPKit" spec="~> 0.2.0" />
-        <pod name="SJVideoPlayer" spec="~> 3.2.4" />
+        <pod name="SJBaseVideoPlayer" options=":git => 'https://github.com/changsanjiang/SJBaseVideoPlayer.git'"/>
+        <pod name="SJVideoPlayer" options=":git => 'https://github.com/changsanjiang/SJVideoPlayer.git'"/>
       </pods>
     </podspec>
     <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
