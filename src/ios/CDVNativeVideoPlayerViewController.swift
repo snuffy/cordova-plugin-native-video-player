@@ -23,6 +23,9 @@ public struct MediaItem {
 class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsable {
     
     var player:SJVideoPlayer!
+    var initialState: PIPState { return .full }
+    var initialPosition: PIPPosition { return .topRight }
+    
     let closeButton = UIButton(type: .custom)
     let pipButton = UIButton(type: .custom)
     let titleTextView = UILabel()

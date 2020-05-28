@@ -49,7 +49,7 @@ import SJVideoPlayer
 
         vc.playlist = playlist
         PIPKit.show(with: vc)
-        vc.stopPIPMode()
+        
         self.viewController.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
