@@ -1,0 +1,20 @@
+{
+    "name": "jp.snuffy.nativevideoplayertest",
+    "displayName": "NativeVideoPlayer",
+    "version": "1.0.0",
+    "description": "A sample Apache Cordova application that responds to the deviceready event.",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "clean": "rm -rf platforms plugins node_modules package-lock.json; cp ./backup/package.json ./package.json;",
+      "add:ios": "cordova platform add ios; cordova plugin add .. --link",
+      "add:android": "cordova platform add android; cordova plugin add .. --link",
+      "build:ios": "cordova build ios",
+      "build:android": "cordova build android"
+    },
+    "keywords": [
+      "ecosystem:cordova"
+    ],
+    "author": "Apache Cordova Team",
+    "license": "Apache-2.0"
+  }
