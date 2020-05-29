@@ -53,9 +53,9 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     
     override func viewDidLoad() {
 
-        // playlist.append(media)
-        // playlist.append(media2)
-        // playlist.append(media3)
+//         playlist.append(media)
+//         playlist.append(media2)
+//         playlist.append(media3)
         
         player = SJVideoPlayer()
         player.pauseWhenAppDidEnterBackground = false;
