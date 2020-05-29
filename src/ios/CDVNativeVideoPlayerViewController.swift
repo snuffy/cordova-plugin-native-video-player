@@ -252,6 +252,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     @objc func tappedClose(_ sender: UIButton) {
         self.player.controlLayerNeedAppear()
         PIPKit.dismiss(animated: true)
+        NotificationCenter.default.post(name: Notification.Name.CDVNVPDidClose, object: nil)
     }
     
     @objc func tapToPip(_ sender: UIButton) {
@@ -391,4 +392,9 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     }
     
     
+}
+
+
+extension Notification.Name {
+    static let CDVNVPDidClose = Notification.Name("CDVNVPDidClose")
 }

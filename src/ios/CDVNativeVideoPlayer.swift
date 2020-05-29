@@ -14,6 +14,11 @@ import SJVideoPlayer
             SJVideoPlayer.update { (settings) in
                 settings.progress_thumbSize = 12;
             }
+            
+//            NotificationCenter.default.addObserver(self, selector: #selector(handleDidLayoutSubviews(notification:)), name: Notification.Name.CDVViewDidLayoutSubviews, object: nil)
+//
+            // for close event
+            NotificationCenter.default.addObserver(self, selector: #selector(close), name: Notification.Name.CDVNVPDidClose, object: nil)
         }
         catch {
             // TODO error
@@ -46,11 +51,8 @@ import SJVideoPlayer
         }
 
         let vc = VGMediaViewController()
-
         vc.playlist = playlist
         PIPKit.show(with: vc)
-        
-        self.viewController.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
     @objc func stop(_ command: CDVInvokedUrlCommand) {
@@ -59,10 +61,29 @@ import SJVideoPlayer
         commandDelegate.send(result, callbackId: command.callbackId)
     }
     
+    @objc func close(_ notification: Notification) {
+        print("close!!!!")
+        resetWebviewSize()
+    }
+    
+    @objc private func handleDidLayoutSubviews(notification: Notification) {
+        resetWebviewSize()
+    }
+    
+    private func resetWebviewSize() {
+        if (NSFoundationVersionNumber < NSFoundationVersionNumber_iOS_7_1 && NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+            return;
+        }
+        
+        if (!(viewController.isViewLoaded && viewController.view?.window != nil)) {
+            return;
+        }
+        
+        guard let frame = webView.superview?.frame else {return}
+        webView.frame = frame
+    }
     
 }
 
 
-extension Notification.Name {
-    static let closeButton = Notification.Name("notifyName")
-}
+
