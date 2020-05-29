@@ -168,8 +168,8 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         player.defaultEdgeControlLayer.leftAdapter.removeItem(forTag: SJEdgeControlLayerLeftItem_Lock)
         // 横向き more ボタンは削除
         player.defaultEdgeControlLayer.topAdapter.removeItem(forTag: SJEdgeControlLayerTopItem_More)
-        // 自動回転のオフ
-        player.rotationManager.isDisabledAutorotation = true
+        // 自動回転のオン
+        player.rotationManager.isDisabledAutorotation = false
         
         // 回転が始まる時
         player.rotationObserver.rotationDidStartExeBlock = { mgr in
@@ -240,29 +240,33 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.player.vc_viewDidAppear()
-        
+        player.vc_viewDidAppear()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        self.player.vc_viewWillDisappear()
+        player.vc_viewWillDisappear()
+        player.assetURL = nil
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        self.player.vc_viewDidDisappear()
+        player.vc_viewDidDisappear()
+        player.assetURL = nil
     }
     
     @objc func tappedClose(_ sender: UIButton) {
-        self.player.controlLayerNeedAppear()
+        player.controlLayerNeedAppear()
         PIPKit.dismiss(animated: true)
+        player.assetURL = nil
         NotificationCenter.default.post(name: Notification.Name.CDVNVPDidClose, object: nil)
     }
     
     @objc func tapToPip(_ sender: UIButton) {
         if PIPKit.isPIP {
             stopPIPMode()
+            // 自動回転オン
+            player.rotationManager.isDisabledAutorotation = false
             pipButton.setImage(pipinImage, for: .normal)
             closeButton.isHidden = false;
             player.defaultEdgeControlLayer.isHidden = false
@@ -270,6 +274,8 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
             titleTextView.font = defualtTitleFont
         } else {
             startPIPMode()
+            // 自動回転オフ
+            player.rotationManager.isDisabledAutorotation = true
             pipButton.setImage(fullScreenImage, for: .normal)
             closeButton.isHidden = true;
             player.defaultEdgeControlLayer.isHidden = true
