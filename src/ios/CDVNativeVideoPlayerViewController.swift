@@ -22,9 +22,11 @@ public struct MediaItem {
 
 class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsable {
     
+    
+    var portrateViewSize: CGRect?
     var player:SJVideoPlayer!
     var initialState: PIPState { return .full }
-    var initialPosition: PIPPosition { return .topRight }
+    var initialPosition: PIPPosition { return .bottomRight }
     
     let closeButton = UIButton(type: .custom)
     let pipButton = UIButton(type: .custom)
@@ -65,6 +67,8 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
             make?.edges.setOffset(0)
         }
         
+        // 元の大きさをとっておく
+        portrateViewSize = self.view.frame
         
         let first = playlist[currentIndex]
         player.urlAsset = SJVideoPlayerURLAsset(url: first.source)
@@ -180,8 +184,9 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         player.rotationObserver.rotationDidEndExeBlock = { mgr in
             // 画面が元に戻った時に、サイズ調整をする
             if (!mgr.isFullscreen && !mgr.isTransitioning) {
+                self.view.frame = self.portrateViewSize!
+                self.view.superview?.frame = self.portrateViewSize!
                 self.stopPIPMode()
-                
             }
         }
         
