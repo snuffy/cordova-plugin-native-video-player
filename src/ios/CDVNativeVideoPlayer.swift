@@ -11,12 +11,6 @@ import SJVideoPlayer
             try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback)
             try AVAudioSession.sharedInstance().setActive(true)
             UIApplication.shared.beginReceivingRemoteControlEvents()
-            SJVideoPlayer.update { (settings) in
-                settings.progress_thumbSize = 12;
-            }
-            
-//            NotificationCenter.default.addObserver(self, selector: #selector(handleDidLayoutSubviews(notification:)), name: Notification.Name.CDVViewDidLayoutSubviews, object: nil)
-//
             // for close event
             NotificationCenter.default.addObserver(self, selector: #selector(close), name: Notification.Name.CDVNVPDidClose, object: nil)
         }
@@ -84,6 +78,3 @@ import SJVideoPlayer
     }
     
 }
-
-
-

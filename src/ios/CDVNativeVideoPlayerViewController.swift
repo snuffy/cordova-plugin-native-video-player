@@ -39,7 +39,9 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     // font
     let defualtTitleFont = UIFont.systemFont(ofSize: 20, weight: .bold)
     let pipTitleFont = UIFont.systemFont(ofSize: 11, weight: .medium)
-
+    
+    let fullScreenGesture = SJPlayerGestureTypeMask(rawValue: SJPlayerGestureTypeMask_SingleTap.rawValue | SJPlayerGestureTypeMask_DoubleTap.rawValue)
+    let pipScreenGesture = SJPlayerGestureTypeMask(rawValue: SJPlayerGestureTypeMask_DoubleTap.rawValue)
     // let media = MediaItem(title: "タイトル1", album: "アルバム1", source: URL(string: "http://www.hochmuth.com/mp3/Haydn_Cello_Concerto_D-1.mp3")! )
     // let media2 = MediaItem(title: "タイトル2", album: "アルバム3", source: URL(string: "http://www.hochmuth.com/mp3/Haydn_Cello_Concerto_D-1.mp3")!)
     // let media3 = MediaItem(title: "タイトル3", album: "アルバム2", source: URL(string: "https://dh2.v.netease.com/2017/cg/fxtpty.mp4")!)
@@ -49,7 +51,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     
     var currentIndex = 0
     
-
+    var isRotating = false;
     
     @IBOutlet weak var containerView: UIView!
     
@@ -141,7 +143,9 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         self.pipButton.layer.cornerRadius = 20
         self.pipButton.titleEdgeInsets = UIEdgeInsetsMake(2.0, 6.0, 2.0, 6.0)
         self.pipButton.tintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        self.pipButton.addTarget(self, action: #selector(self.tapToPip(_:)), for: .touchUpInside)
+        
+        self.pipButton.addTarget(self, action: #selector(self.touchStart(_:)), for: .touchDown)
+        self.pipButton.addTarget(self, action: #selector(self.tapToPip(_:)), for: [.touchUpInside, .touchUpOutside])
         
         self.view.addSubview(self.pipButton)
         self.pipButton.snp.makeConstraints { (make) in
@@ -157,7 +161,10 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     }
     
     private func setupPlayerSettings() {
-        player.gestureControl.supportedGestureTypes = SJPlayerGestureTypeMask_All
+        player.defaultEdgeControlLayer.isHiddenBottomProgressIndicator = true
+        // gesture control の設定
+        player.gestureControl.supportedGestureTypes = fullScreenGesture
+        // 1.5倍速
         player.rateWhenLongPressGestureTriggered = 1.5
 
         player.showMoreItemToTopControlLayer = true
@@ -173,12 +180,16 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         
         // 回転が始まる時
         player.rotationObserver.rotationDidStartExeBlock = { mgr in
+            
             if (mgr.isFullscreen) {
                 self.showTitlePrompt()
             }
             else {
                 self.hideTitlePrompt()
             }
+            
+            self.pipButton.isEnabled = false;
+            self.isRotating = true;
         }
         // 回転が終わった後
         player.rotationObserver.rotationDidEndExeBlock = { mgr in
@@ -188,10 +199,12 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
                 self.view.superview?.frame = self.portrateViewSize!
                 self.stopPIPMode()
             }
+            self.pipButton.isEnabled = true;
+            self.isRotating = false;
         }
         
         // 設定ボタンの配置
-        let tune = resourceLoader.getImage(named: "tune")!
+        let tune = resourceLoader.getImage(named: "settings")!
         let settingSwitchItem = SJEdgeControlButtonItem(image: tune, target: self, action: #selector(openMore), tag: 50)
         
         player.defaultEdgeControlLayer.bottomAdapter.add(settingSwitchItem)
@@ -262,6 +275,9 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         NotificationCenter.default.post(name: Notification.Name.CDVNVPDidClose, object: nil)
     }
     
+    @objc func touchStart(_ sender: UIButton) {
+        player.rotationManager.isDisabledAutorotation = true
+    }
     @objc func tapToPip(_ sender: UIButton) {
         if PIPKit.isPIP {
             stopPIPMode()
@@ -270,7 +286,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
             pipButton.setImage(pipinImage, for: .normal)
             closeButton.isHidden = false;
             player.defaultEdgeControlLayer.isHidden = false
-            player.gestureControl.supportedGestureTypes = SJPlayerGestureTypeMask_All
+            player.gestureControl.supportedGestureTypes = fullScreenGesture
             titleTextView.font = defualtTitleFont
         } else {
             startPIPMode()
@@ -279,7 +295,7 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
             pipButton.setImage(fullScreenImage, for: .normal)
             closeButton.isHidden = true;
             player.defaultEdgeControlLayer.isHidden = true
-            player.gestureControl.supportedGestureTypes = SJPlayerGestureTypeMask_DoubleTap
+            player.gestureControl.supportedGestureTypes = pipScreenGesture
             titleTextView.font = pipTitleFont
         }
     }
