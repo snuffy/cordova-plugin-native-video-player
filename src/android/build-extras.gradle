@@ -1,6 +1,6 @@
 dependencies {
     compile 'com.android.support:multidex:1.0.3'
-    // some plugin to use, write here
+    implementation 'com.google.android.exoplayer:exoplayer:2.11.5'
 }
 android {
     dexOptions {
