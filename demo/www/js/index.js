@@ -5,12 +5,10 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady.bind(this), false);
     },
 
-    onDeviceReady: function() {
-        this.receivedEvent('deviceready');
-        
+    onDeviceReady: function() {    
         // open video player
-        const videoBtn = document.querySelector('.openVideoBtn');
-        videoBtn.addEventListener('click', openVideo);
+        const playerBtn = document.querySelector('.openPlayerBtn');
+        playerBtn.addEventListener('click', openVideo);
     },
 };
 

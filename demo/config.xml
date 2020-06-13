@@ -18,9 +18,13 @@
     <allow-intent href="geo:*" />
     <platform name="android">
         <allow-intent href="market:*" />
+        <resource-file src="assets/sample1.mp3" target="app/src/main/assets/sample/sample1.mp3" />
+        <resource-file src="assets/sample2.mp4" target="app/src/main/assets/sample/sample2.mp4" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
+
     </platform>
+
 </widget>
