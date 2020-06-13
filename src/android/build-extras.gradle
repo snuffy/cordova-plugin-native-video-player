@@ -1,0 +1,18 @@
+dependencies {
+    compile 'com.android.support:multidex:1.0.3'
+    // some plugin to use, write here
+}
+android {
+    dexOptions {
+        jumboMode true
+        javaMaxHeapSize "4g"
+    }
+    defaultConfig {
+        multiDexEnabled true
+    }
+    sourceSets {
+        main.java {
+            srcDirs += 'src/main/kotlin'
+        }
+    }
+}
