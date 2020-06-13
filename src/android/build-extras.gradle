@@ -1,6 +1,11 @@
 dependencies {
     compile 'com.android.support:multidex:1.0.3'
-    implementation 'com.google.android.exoplayer:exoplayer:2.11.5'
+
+    def exoplayer_version = '2.11.5'
+    implementation "com.google.android.exoplayer:exoplayer:$exoplayer_version"
+    implementation "com.google.android.exoplayer:extension-mediasession:$exoplayer_version"
+
+    implementation 'com.google.code.gson:gson:2.8.6'
 }
 android {
     dexOptions {

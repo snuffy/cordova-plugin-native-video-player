@@ -19,6 +19,10 @@
 
     <!-- soruce -->
     <source-file src="src/android/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/MediaItem.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+
+    <!-- res -->
+    <resource-file src="src/android/activity_main.xml" target="res/layout/activity_main.xml"/>
 
     <!--gradle file-->
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
