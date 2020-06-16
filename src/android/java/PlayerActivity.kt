@@ -55,11 +55,6 @@ class PlayerActivity : AppCompatActivity() {
         private const val KEY_AUTO_PLAY = "auto_play"
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         releasePlayer()
