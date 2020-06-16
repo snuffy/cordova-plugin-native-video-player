@@ -8,6 +8,6 @@ data class MediaItem(
         @SerializedName("source") var source: String? = null
 ) {
     companion object {
-        val MEDIA_ITEMS_EXTRA = "media_items_extra"
+        const val MEDIA_ITEMS_EXTRA = "media_items_extra"
     }
 }

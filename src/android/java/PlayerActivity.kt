@@ -1,19 +1,18 @@
 
 package jp.rabee
 
+import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
+import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -34,12 +33,15 @@ import kotlin.math.max
 class PlayerActivity : AppCompatActivity() {
 
     private var player : SimpleExoPlayer? = null
-    private var playerView : PlayerView? = null
     private var mediaSource : MediaSource? = null
     private var adsLoader : AdsLoader? = null
     private var items: List<MediaItem>? = null
 
     private lateinit var dataSourceFactory : DataSource.Factory
+
+    private var playerView : PlayerView? = null
+    private var previewTimeBar : PreviewTimeBar? = null
+    private var closeButton : ImageButton? = null
 
     private var startAutoPlay = true
     private var startWindow = C.INDEX_UNSET
@@ -48,26 +50,14 @@ class PlayerActivity : AppCompatActivity() {
 
     companion object {
         // Saved instance state keys.
-        private val KEY_WINDOW = "window"
-        private val KEY_POSITION = "position"
-        private val KEY_AUTO_PLAY = "auto_play"
+        private const val KEY_WINDOW = "window"
+        private const val KEY_POSITION = "position"
+        private const val KEY_AUTO_PLAY = "auto_play"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_player)
 
-        // fullscreen
-        window.decorView.apply {
-            systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    )
-        }
-
-        playerView = findViewById(R.id.player_view);
-        dataSourceFactory = buildDataSourceFactory()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -80,6 +70,17 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        setContentView(R.layout.activity_player)
+
+        playerView = findViewById(R.id.player_view);
+        previewTimeBar = findViewById(R.id.exo_progress)
+        closeButton = findViewById(R.id.close_button)
+        closeButton?.setOnClickListener {
+            finish()
+        }
+
+        dataSourceFactory = buildDataSourceFactory()
+
         if (Util.SDK_INT > 23) {
             initializePlayer()
             playerView?.apply {
@@ -90,6 +91,16 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        // fullscreen
+        window.decorView.apply {
+            systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    )
+        }
+
         if (Util.SDK_INT <= 23 || player == null) {
             initializePlayer()
             playerView?.apply {
@@ -140,6 +151,49 @@ class PlayerActivity : AppCompatActivity() {
             putBoolean(KEY_AUTO_PLAY, startAutoPlay)
             putInt(KEY_WINDOW, startWindow)
             putLong(KEY_POSITION, startPosition)
+        }
+    }
+
+    override fun onBackPressed() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && packageManager
+                        .hasSystemFeature(
+                                PackageManager.FEATURE_PICTURE_IN_PICTURE)){
+            enterPIPMode()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+
+        enterPIPMode()
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
+        (super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig))
+
+        if (!isInPictureInPictureMode) {
+            playerView?.apply {
+                useController = true
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    fun enterPIPMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+            playerView?.apply {
+                useController = false
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val params = PictureInPictureParams.Builder()
+                this.enterPictureInPictureMode(params.build())
+            } else {
+                this.enterPictureInPictureMode()
+            }
         }
     }
 

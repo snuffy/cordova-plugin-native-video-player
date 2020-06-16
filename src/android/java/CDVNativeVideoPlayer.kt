@@ -34,7 +34,7 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
     // プレイヤーの再生スタート
     private fun start(callbackContext: CallbackContext, params: JSONArray): Boolean {
         cordova.activity.run {
-            GsonBuilder().create().let { gson ->
+            GsonBuilder().create().also { gson ->
                 val items = gson.fromJson(params.toString(), Array<MediaItem>::class.java).toList()
                 items.forEach {
                     Log.d(TAG, "MediaItem: ${URLDecoder.decode(it.source, "UTF-8")}")
@@ -46,17 +46,18 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
 
                 val pluginResult = PluginResult(PluginResult.Status.OK, true);
                 callbackContext.sendPluginResult(pluginResult);
-                return true
+            } ?: run {
+
+                val pluginResult = PluginResult(PluginResult.Status.ERROR, false);
+                callbackContext.sendPluginResult(pluginResult);
+
+                return false;
             }
         }
-
-        val pluginResult = PluginResult(PluginResult.Status.ERROR, false);
-        callbackContext.sendPluginResult(pluginResult);
-
-        return false;
+        return true
     }
 
     companion object {
-        protected val TAG = "CDVNativeVideoPlayer"
+        private const val TAG = "CDVNativeVideoPlayer"
     }
 }
