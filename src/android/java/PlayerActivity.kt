@@ -1,19 +1,25 @@
 
 package jp.rabee
 
+import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE
 import android.content.res.Configuration
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource
@@ -24,6 +30,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.GsonBuilder
 import jp.snuffy.nativeVideoPlayerTest.R
@@ -41,18 +48,31 @@ class PlayerActivity : AppCompatActivity() {
 
     private var playerView : PlayerView? = null
     private var previewTimeBar : PreviewTimeBar? = null
+    private var titleView : TextView? = null
+    private var rateButton : ImageButton? = null
+    private var fullscreenButton : ImageButton? = null
     private var closeButton : ImageButton? = null
 
     private var startAutoPlay = true
     private var startWindow = C.INDEX_UNSET
     private var startPosition = C.TIME_UNSET
+    private var playbackRate = PLAYBACK_RATE_10
+    private var orientation: Int = Configuration.ORIENTATION_PORTRAIT
 
 
     companion object {
+        // TAG
+        private const val TAG = "PlayerActivity"
+
         // Saved instance state keys.
         private const val KEY_WINDOW = "window"
         private const val KEY_POSITION = "position"
         private const val KEY_AUTO_PLAY = "auto_play"
+
+        // Playback speed
+        private const val PLAYBACK_RATE_08 = 0.8f
+        private const val PLAYBACK_RATE_10 = 1.0f
+        private const val PLAYBACK_RATE_15 = 1.5f
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -63,12 +83,46 @@ class PlayerActivity : AppCompatActivity() {
         setIntent(intent)
     }
 
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onStart() {
         super.onStart()
         setContentView(R.layout.activity_player)
 
         playerView = findViewById(R.id.player_view);
         previewTimeBar = findViewById(R.id.exo_progress)
+        titleView = findViewById(R.id.title_view)
+
+        rateButton = findViewById(R.id.rate_change_button)
+        rateButton?.setOnClickListener {
+            var rate = playbackRate
+            when (playbackRate) {
+                PLAYBACK_RATE_08 -> {
+                    rate = PLAYBACK_RATE_10
+                }
+                PLAYBACK_RATE_10 -> {
+                    rate = PLAYBACK_RATE_15
+                }
+                PLAYBACK_RATE_15 -> {
+                    rate = PLAYBACK_RATE_08
+                }
+            }
+            setPlaybackSpeed(rate)
+        }
+
+        fullscreenButton = findViewById(R.id.fullscreen_button)
+        fullscreenButton?.setOnClickListener {
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_exit_white)
+                orientation = Configuration.ORIENTATION_LANDSCAPE
+            } else {
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_white)
+                orientation = Configuration.ORIENTATION_PORTRAIT
+
+            }
+        }
+
         closeButton = findViewById(R.id.close_button)
         closeButton?.setOnClickListener {
             finish()
@@ -149,11 +203,22 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_white)
+            orientation = Configuration.ORIENTATION_PORTRAIT
+        } else {
+            fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_exit_white)
+            orientation = Configuration.ORIENTATION_LANDSCAPE
+        }
+    }
+
     override fun onBackPressed() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 && packageManager
                         .hasSystemFeature(
-                                PackageManager.FEATURE_PICTURE_IN_PICTURE)){
+                                FEATURE_PICTURE_IN_PICTURE)){
             enterPIPMode()
         } else {
             super.onBackPressed()
@@ -179,7 +244,7 @@ class PlayerActivity : AppCompatActivity() {
     @Suppress("DEPRECATION")
     fun enterPIPMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+                && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
             playerView?.apply {
                 useController = false
             }
@@ -198,6 +263,7 @@ class PlayerActivity : AppCompatActivity() {
         if (player == null) {
             player = SimpleExoPlayer.Builder(applicationContext).build().also {
                 it.setAudioAttributes(AudioAttributes.DEFAULT, true)
+                it.setPlaybackParameters(PlaybackParameters(playbackRate))
                 it.playWhenReady = startAutoPlay
 
                 playerView?.apply {
@@ -246,9 +312,19 @@ class PlayerActivity : AppCompatActivity() {
                         //do nothing.
                     }
                 }
-                item.title?.let { title ->
-                    // do nothing.
-                }
+//                when (Util.getTrackTypeString(0)) {
+//                    "video" -> {
+//                        titleView?.visibility = View.INVISIBLE
+//                    }
+//                    else -> {
+//                        item.title?.also { title ->
+//                            titleView.text = title
+//                            titleView?.visibility = View.VISIBLE
+//                        } ?: run {
+//                            titleView?.visibility = View.INVISIBLE
+//                        }
+//                    }
+//                }
             }
         }
 
@@ -292,6 +368,22 @@ class PlayerActivity : AppCompatActivity() {
         startAutoPlay = true
         startWindow = C.INDEX_UNSET
         startPosition = C.TIME_UNSET
+    }
+
+    private fun setPlaybackSpeed(rate : Float) {
+        if (rate < 0.5 || rate > 2.0) {
+            Log.w(TAG, "playback speed is invalid, speed = [" + rate + "]");
+            return;
+        }
+        player?.let {
+            val playbackParameters = it.playbackParameters;
+            if (playbackParameters.speed != rate) {
+                it.setPlaybackParameters(PlaybackParameters(rate));
+                playbackRate = rate
+            } else {
+                Log.d(TAG, "playback speed is not changed!");
+            }
+        }
     }
 
     private fun buildDataSourceFactory() : DataSource.Factory {

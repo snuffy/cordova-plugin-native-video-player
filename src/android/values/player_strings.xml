@@ -28,4 +28,7 @@
     <string name="prefer_extension_decoders">Prefer extension decoders</string>
     <string name="random_abr">Enable random ABR</string>
     <string name="tunneling">Request multimedia tunneling</string>
+    <string name="exo_controls_seek_preview_description">PreviewImage Seeking</string>
+    <string name="exo_controls_rate_description">Rate Changing</string>
+    <string name="exo_controls_close_description">Close</string>
 </resources>
