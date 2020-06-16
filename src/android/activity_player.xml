@@ -8,7 +8,7 @@
     android:background="@android:color/black">
 
     <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/playerView"
+        android:id="@+id/player_view"
         android:tag="playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -17,12 +17,29 @@
       </feature>
     </config-file>
 
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+        <activity
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="PlayerActivity"
+            android:launchMode="singleTop"
+            android:name="jp.rabee.PlayerActivity"
+            android:theme="@style/PlayerTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+    </config-file>
+
     <!-- soruce -->
     <source-file src="src/android/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
     <source-file src="src/android/MediaItem.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/PlayerActivity.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
 
     <!-- res -->
-    <resource-file src="src/android/activity_main.xml" target="res/layout/activity_main.xml"/>
+    <resource-file src="src/android/activity_player.xml" target="res/layout/activity_player.xml"/>
+    <resource-file src="src/android/player_strings.xml" target="res/values/player_strings.xml"/>
+    <resource-file src="src/android/styles.xml" target="res/values/styles.xml"/>
 
     <!--gradle file-->
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />

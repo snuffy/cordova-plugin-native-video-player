@@ -1,38 +1,15 @@
 package jp.rabee
 
-import android.content.Context
 import android.content.Intent
-import android.content.res.AssetFileDescriptor
-import android.media.MediaPlayer
-import android.net.Uri
 import org.apache.cordova.*
-import org.json.JSONException
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.WindowManager
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlayerFactory
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.ExtractorMediaSource
-import com.google.android.exoplayer2.source.MediaSourceFactory
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
-import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Util
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import org.json.*
 import java.net.URLDecoder
 
-
 class CDVNativeVideoPlayer : CordovaPlugin() {
 
-    lateinit var player : SimpleExoPlayer
+//    lateinit var player : SimpleExoPlayer
 
     override public fun initialize(cordova: CordovaInterface,  webView: CordovaWebView) {
         LOG.d(TAG, "hi! This is CDVKeepAwake. Now intitilaizing ...");
@@ -42,63 +19,57 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
     // js 側で関数が実行されるとこの関数がまず発火する
     override fun execute(action: String, data: JSONArray, callbackContext: CallbackContext): Boolean {
         var result = false
-        val params = data.getJSONArray(0);
 
-        val gson = GsonBuilder().create()
-        val items = gson.fromJson(params.toString(), Array<MediaItem>::class.java).toList()
-        items.forEach {
-            Log.d(TAG, "MediaItem: ${URLDecoder.decode(it.source, "UTF-8")}")
-        }
-
-        val activity = cordova.activity
-        val app = activity.application
-
-        //TODO: Intentで別Activityにすること、PlayerUIをカスタマイズすること、再生速度を変更すること、PIPモードを試すこと
-        activity.runOnUiThread {
-            val inflater = cordova.activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-            val id = app.resources.getIdentifier("activity_main", "layout", app.packageName)
-            val rootView = inflater.inflate(id, null)
-            activity.setContentView(rootView)
-            val playerView: PlayerView = rootView.findViewWithTag("playerView")
-
-
-            player = SimpleExoPlayer.Builder(app.applicationContext).build()
-            playerView.player = player
-
-            val userAgent = Util.getUserAgent(playerView.context, activity.applicationInfo.loadLabel(activity.packageManager).toString())
-            val dataSourceFactory =
-                    DefaultDataSourceFactory(playerView.context,
-                            Util.getUserAgent(playerView.context,
-                                    userAgent))
-
-            var concatMediaSource = ConcatenatingMediaSource()
-            items.forEach {
-                val url = Uri.parse(URLDecoder.decode(it.source, "UTF-8"))
-                when (Util.inferContentType(url)) {
-                    C.TYPE_HLS -> {
-                        val mediaSource = HlsMediaSource
-                                .Factory(dataSourceFactory)
-                                .createMediaSource(url)
-                        concatMediaSource.addMediaSource(mediaSource)
-                    }
-                    C.TYPE_OTHER -> {
-                        val mediaSource = ProgressiveMediaSource
-                                .Factory(dataSourceFactory)
-                                .createMediaSource(url)
-                        concatMediaSource.addMediaSource(mediaSource)
-                    }
-                    else -> {
-                        //do nothing.
-                    }
-                }
-            }
-            player.prepare(concatMediaSource)
-        }
-        player.playWhenReady = true
+//        val activity = cordova.activity
+//        val app = activity.application
+//
+//        //TODO: Intentで別Activityにすること、PlayerUIをカスタマイズすること、再生速度を変更すること、PIPモードを試すこと
+//        activity.runOnUiThread {
+//            val inflater = cordova.activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//            val id = app.resources.getIdentifier("activity_main", "layout", app.packageName)
+//            val rootView = inflater.inflate(id, null)
+//            activity.setContentView(rootView)
+//            val playerView: PlayerView = rootView.findViewWithTag("playerView")
+//
+//
+//            player = SimpleExoPlayer.Builder(app.applicationContext).build()
+//            playerView.player = player
+//
+//            val userAgent = Util.getUserAgent(playerView.context, activity.applicationInfo.loadLabel(activity.packageManager).toString())
+//            val dataSourceFactory =
+//                    DefaultDataSourceFactory(playerView.context,
+//                            Util.getUserAgent(playerView.context,
+//                                    userAgent))
+//
+//            var concatMediaSource = ConcatenatingMediaSource()
+//            items.forEach {
+//                val url = Uri.parse(URLDecoder.decode(it.source, "UTF-8"))
+//                when (Util.inferContentType(url)) {
+//                    C.TYPE_HLS -> {
+//                        val mediaSource = HlsMediaSource
+//                                .Factory(dataSourceFactory)
+//                                .createMediaSource(url)
+//                        concatMediaSource.addMediaSource(mediaSource)
+//                    }
+//                    C.TYPE_OTHER -> {
+//                        val mediaSource = ProgressiveMediaSource
+//                                .Factory(dataSourceFactory)
+//                                .createMediaSource(url)
+//                        concatMediaSource.addMediaSource(mediaSource)
+//                    }
+//                    else -> {
+//                        //do nothing.
+//                    }
+//                }
+//            }
+//            player.prepare(concatMediaSource)
+//        }
+//        player.playWhenReady = true
 
         when(action) {
             "start" -> {
-                result = this.start(callbackContext)
+                val params = data.getJSONArray(0);
+                result = this.start(callbackContext, params)
             }
             else -> {
                 // TODO error
@@ -109,10 +80,28 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
     }
 
     // プレイヤーの再生スタート
-    private fun start(callbackContext: CallbackContext): Boolean {
-        val pluginResult = PluginResult(PluginResult.Status.OK, true);
+    private fun start(callbackContext: CallbackContext, params: JSONArray): Boolean {
+        cordova.activity.run {
+            GsonBuilder().create().let { gson ->
+                val items = gson.fromJson(params.toString(), Array<MediaItem>::class.java).toList()
+                items.forEach {
+                    Log.d(TAG, "MediaItem: ${URLDecoder.decode(it.source, "UTF-8")}")
+                }
+
+                val intent = Intent(cordova.activity.application, PlayerActivity::class.java)
+                intent.putExtra(MediaItem.MEDIA_ITEMS_EXTRA, gson.toJson(items))
+                startActivity(intent)
+
+                val pluginResult = PluginResult(PluginResult.Status.OK, true);
+                callbackContext.sendPluginResult(pluginResult);
+                return true
+            }
+        }
+
+        val pluginResult = PluginResult(PluginResult.Status.ERROR, false);
         callbackContext.sendPluginResult(pluginResult);
-        return true;
+
+        return false;
     }
 
     companion object {
