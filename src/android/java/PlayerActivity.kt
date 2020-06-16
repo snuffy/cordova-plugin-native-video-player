@@ -1,19 +1,16 @@
 
 package jp.rabee
 
+import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -35,6 +32,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private var player : SimpleExoPlayer? = null
     private var playerView : PlayerView? = null
+    private var previewTimeBar : PreviewTimeBar? = null
     private var mediaSource : MediaSource? = null
     private var adsLoader : AdsLoader? = null
     private var items: List<MediaItem>? = null
@@ -67,6 +65,7 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         playerView = findViewById(R.id.player_view);
+        previewTimeBar = findViewById(R.id.exo_progress)
         dataSourceFactory = buildDataSourceFactory()
     }
 
@@ -142,6 +141,41 @@ class PlayerActivity : AppCompatActivity() {
             putLong(KEY_POSITION, startPosition)
         }
     }
+
+    override fun onBackPressed() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && packageManager
+                        .hasSystemFeature(
+                                PackageManager.FEATURE_PICTURE_IN_PICTURE)){
+            enterPIPMode()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        enterPIPMode()
+    }
+
+    @Suppress("DEPRECATION")
+    fun enterPIPMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && packageManager
+                        .hasSystemFeature(
+                                PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+            playerView?.apply {
+                useController = false
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val params = PictureInPictureParams.Builder()
+                this.enterPictureInPictureMode(params.build())
+            } else {
+                this.enterPictureInPictureMode()
+            }
+        }
+    }
+
 
     private fun initializePlayer() {
         mediaSource = createTopLevelMediaSource()
