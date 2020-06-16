@@ -3,8 +3,15 @@ package jp.rabee
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.exoplayer2.C
@@ -41,7 +48,7 @@ class PlayerActivity : AppCompatActivity() {
 
     companion object {
         // Saved instance state keys.
-        private val KEY_WINDOW = "windlow"
+        private val KEY_WINDOW = "window"
         private val KEY_POSITION = "position"
         private val KEY_AUTO_PLAY = "auto_play"
     }
@@ -49,6 +56,15 @@ class PlayerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
+
+        // fullscreen
+        window.decorView.apply {
+            systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            or View.SYSTEM_UI_FLAG_FULLSCREEN
+                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    )
+        }
 
         playerView = findViewById(R.id.player_view);
         dataSourceFactory = buildDataSourceFactory()
@@ -114,7 +130,6 @@ class PlayerActivity : AppCompatActivity() {
             showToast(R.string.storage_permission_denied)
             finish()
         }
-
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -127,7 +142,6 @@ class PlayerActivity : AppCompatActivity() {
             putLong(KEY_POSITION, startPosition)
         }
     }
-
 
     private fun initializePlayer() {
         mediaSource = createTopLevelMediaSource()
@@ -182,6 +196,9 @@ class PlayerActivity : AppCompatActivity() {
                     else -> {
                         //do nothing.
                     }
+                }
+                item.title?.let { title ->
+                    // do nothing.
                 }
             }
         }
