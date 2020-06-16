@@ -69,15 +69,21 @@
 
     </FrameLayout>
 
-    <ImageButton
+    <Button
         android:id="@+id/rate_change_button"
-        android:src="@drawable/ic_fullscreen_white"
+        android:drawableTop="@drawable/ic_speed_white"
+        android:drawablePadding="-12sp"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/exo_controls_rate_description"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/controlsLayout"
-        android:layout_height="48dp"
-        android:layout_width="48dp"/>
+        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:paddingTop="8dp"
+        android:textColor="#FFFFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        />
 
     <TextView
         android:id="@id/exo_position"
@@ -128,8 +134,10 @@
         android:contentDescription="@string/exo_controls_fullscreen_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/controlsLayout"
-        android:layout_height="48dp"
-        android:layout_width="48dp"/>
+        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:padding="10dp"
+        />
 
     <LinearLayout
         android:id="@+id/controlsLayout"

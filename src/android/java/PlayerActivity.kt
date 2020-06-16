@@ -8,11 +8,11 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE
 import android.content.res.Configuration
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -49,7 +49,7 @@ class PlayerActivity : AppCompatActivity() {
     private var playerView : PlayerView? = null
     private var previewTimeBar : PreviewTimeBar? = null
     private var titleView : TextView? = null
-    private var rateButton : ImageButton? = null
+    private var rateButton : Button? = null
     private var fullscreenButton : ImageButton? = null
     private var closeButton : ImageButton? = null
 
@@ -263,7 +263,7 @@ class PlayerActivity : AppCompatActivity() {
         if (player == null) {
             player = SimpleExoPlayer.Builder(applicationContext).build().also {
                 it.setAudioAttributes(AudioAttributes.DEFAULT, true)
-                it.setPlaybackParameters(PlaybackParameters(playbackRate))
+                setPlaybackSpeed(playbackRate)
                 it.playWhenReady = startAutoPlay
 
                 playerView?.apply {
@@ -384,6 +384,7 @@ class PlayerActivity : AppCompatActivity() {
                 Log.d(TAG, "playback speed is not changed!");
             }
         }
+        rateButton?.text = String.format("x%.1f", rate)
     }
 
     private fun buildDataSourceFactory() : DataSource.Factory {

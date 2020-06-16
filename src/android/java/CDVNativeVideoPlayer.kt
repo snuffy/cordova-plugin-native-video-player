@@ -18,8 +18,6 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
         var result = false
 
         //TODO:
-        // PlayerUIをカスタマイズすること
-        // 再生速度を変更すること
         // SeekPreviewの対応
         // 音声のタイトル表示対応
         when(action) {

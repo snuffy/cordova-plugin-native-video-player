@@ -51,6 +51,7 @@
     <resource-file src="src/android/drawable/ic_forward_10_white.xml" target="res/drawable/ic_forward_10_white.xml"/>
     <resource-file src="src/android/drawable/ic_rewind_10_white.xml" target="res/drawable/ic_rewind_10_white.xml"/>
     <resource-file src="src/android/drawable/ic_close_white.xml" target="res/drawable/ic_close_white.xml"/>
+    <resource-file src="src/android/drawable/ic_speed_white.xml" target="res/drawable/ic_speed_white.xml"/>
 
     <!--gradle file-->
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
