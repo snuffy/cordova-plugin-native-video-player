@@ -17,6 +17,10 @@
       </feature>
     </config-file>
 
+    <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
+        <manifest xmlns:tools="http://schemas.android.com/tools" />
+    </edit-config>
+
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
         <activity
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
@@ -33,9 +37,6 @@
             </intent-filter>
         </activity>
     </config-file>
-    <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
-        <manifest xmlns:tools="http://schemas.android.com/tools" />
-    </edit-config
 
     <!-- soruce -->
     <source-file src="src/android/java/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
