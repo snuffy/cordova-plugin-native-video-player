@@ -39,20 +39,22 @@ import kotlin.math.max
 
 class PlayerActivity : AppCompatActivity() {
 
-    private var player : SimpleExoPlayer? = null
-    private var mediaSource : MediaSource? = null
-    private var adsLoader : AdsLoader? = null
+    private var player: SimpleExoPlayer? = null
+    private var mediaSource: MediaSource? = null
+    private var adsLoader: AdsLoader? = null
     private var items: List<MediaItem>? = null
 
-    private lateinit var dataSourceFactory : DataSource.Factory
+    private lateinit var dataSourceFactory: DataSource.Factory
+    private lateinit var notificationManager: NotificationManager
 
-    private var playerView : PlayerView? = null
-    private var previewTimeBar : PreviewTimeBar? = null
-    private var titleView : TextView? = null
-    private var rateButton : Button? = null
-    private var fullscreenButton : ImageButton? = null
-    private var closeButton : ImageButton? = null
+    private var playerView: PlayerView? = null
+    private var previewTimeBar: PreviewTimeBar? = null
+    private var titleView: TextView? = null
+    private var rateButton: Button? = null
+    private var fullscreenButton: ImageButton? = null
+    private var closeButton: ImageButton? = null
 
+    private var isForegroundService = false
     private var startAutoPlay = true
     private var startWindow = C.INDEX_UNSET
     private var startPosition = C.TIME_UNSET
@@ -129,6 +131,12 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         dataSourceFactory = buildDataSourceFactory()
+//        notificationManager = NotificationManager(
+//                this,
+//                player,
+//
+//
+//                )
 
         if (Util.SDK_INT > 23) {
             initializePlayer()
@@ -215,10 +223,10 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 && packageManager
                         .hasSystemFeature(
-                                FEATURE_PICTURE_IN_PICTURE)){
+                                FEATURE_PICTURE_IN_PICTURE)) {
             enterPIPMode()
         } else {
             super.onBackPressed()
@@ -284,7 +292,7 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun createTopLevelMediaSource() : ConcatenatingMediaSource {
+    private fun createTopLevelMediaSource(): ConcatenatingMediaSource {
         intent.getStringExtra(MediaItem.MEDIA_ITEMS_EXTRA)?.let {
             GsonBuilder().create().apply {
                 items = fromJson(it, Array<MediaItem>::class.java).toList()
@@ -370,7 +378,7 @@ class PlayerActivity : AppCompatActivity() {
         startPosition = C.TIME_UNSET
     }
 
-    private fun setPlaybackSpeed(rate : Float) {
+    private fun setPlaybackSpeed(rate: Float) {
         if (rate < 0.5 || rate > 2.0) {
             Log.w(TAG, "playback speed is invalid, speed = [" + rate + "]");
             return;
@@ -387,10 +395,10 @@ class PlayerActivity : AppCompatActivity() {
         rateButton?.text = String.format("x%.1f", rate)
     }
 
-    private fun buildDataSourceFactory() : DataSource.Factory {
+    private fun buildDataSourceFactory(): DataSource.Factory {
         val userAgent = Util.getUserAgent(applicationContext, applicationInfo.loadLabel(packageManager).toString())
         return DefaultDataSourceFactory(applicationContext,
-                                        Util.getUserAgent(applicationContext, userAgent))
+                Util.getUserAgent(applicationContext, userAgent))
     }
 
     private fun showToast(messageId: Int) {
@@ -400,4 +408,33 @@ class PlayerActivity : AppCompatActivity() {
     private fun showToast(message: String) {
         Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
     }
+
+//    private inner class PlayerNotificationListener :
+//            PlayerNotificationManager.NotificationListener {
+//        override fun onNotificationPosted(
+//                notificationId: Int,
+//                notification: Notification,
+//                ongoing: Boolean
+//        ) {
+//            if (ongoing && !isForegroundService) {
+//                ContextCompat.startForegroundService(
+//                        applicationContext,
+//                        Intent(applicationContext, this@PlayerActivity.javaClass)
+//                )
+//
+//                startForeground(
+//                        notificationId,
+//                        notification
+//                )
+//                isForegroundService = true
+//            }
+//        }
+//
+//        override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+//            stopForeground(true)
+//            isForegroundService = false
+//            stopSelf()
+//        }
+//
+//    }
 }

@@ -1,16 +1,13 @@
 package jp.rabee
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
-import androidx.annotation.RequiresApi
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
@@ -72,19 +69,17 @@ class NotificationManager(
         var currentIconUri: Uri? = null
         var currentBitmap: Bitmap? = null
 
-        override fun createCurrentContentIntent(player: Player?): PendingIntent? =
+        override fun createCurrentContentIntent(player: Player): PendingIntent? =
                 controller.sessionActivity
 
-        override fun getCurrentContentText(player: Player?) =
+        override fun getCurrentContentText(player: Player): CharSequence? =
                 controller.metadata.description.subtitle.toString()
 
-        override fun getCurrentContentTitle(player: Player?) =
+
+        override fun getCurrentContentTitle(player: Player): CharSequence =
                 controller.metadata.description.title.toString()
 
-        override fun getCurrentLargeIcon(
-                player: Player?,
-                callback: PlayerNotificationManager.BitmapCallback?
-        ): Bitmap? {
+        override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
             val iconUri = controller.metadata.description.iconUri
             return if (currentIconUri != iconUri || currentBitmap == null) {
 
@@ -95,7 +90,7 @@ class NotificationManager(
                     currentBitmap = iconUri?.let {
                         resolveUriAsBitmap(it)
                     }
-                    callback?.onBitmap(currentBitmap)
+                    currentBitmap?.let { callback.onBitmap(it) }
                 }
                 null
             } else {
@@ -115,6 +110,7 @@ class NotificationManager(
             }
         }
     }
+
 }
 
 private const val MODE_READ_ONLY = "r"

@@ -59,6 +59,8 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
         return true
     }
 
+
+
     companion object {
         private const val TAG = "CDVNativeVideoPlayer"
     }
