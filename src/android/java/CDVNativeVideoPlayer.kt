@@ -19,7 +19,6 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
 
         //TODO:
         // SeekPreviewの対応
-        // 音声のタイトル表示対応
         when(action) {
             "start" -> {
                 val params = data.getJSONArray(0);
