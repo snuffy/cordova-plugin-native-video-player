@@ -39,7 +39,6 @@ import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.GsonBuilder
-import jp.snuffy.nativeVideoPlayerTest.R
 import java.net.URLDecoder
 import kotlin.math.max
 
@@ -126,19 +125,18 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onStart() {
         super.onStart()
-        setContentView(R.layout.activity_player)
+        setContentView(resources.getIdentifier("activity_player", "layout", application.packageName))
 
-        controllerView = findViewById(R.id.controller_view)
-        playerView = findViewById(R.id.player_view)
+        controllerView = findViewById(resources.getIdentifier("controller_view", "id", application.packageName))
+        playerView = findViewById(resources.getIdentifier("player_view", "id", application.packageName))
         playerView?.let {
             it.setControllerVisibilityListener(this)
             it.setErrorMessageProvider(PlayerErrorMessageProvider())
             it.requestFocus()
         }
         previewTimeBar = findViewById(R.id.exo_progress)
-        titleView = findViewById(R.id.title_view)
-
-        rateButton = findViewById(R.id.rate_change_button)
+        titleView = findViewById(resources.getIdentifier("title_view", "id", application.packageName))
+        rateButton = findViewById(resources.getIdentifier("rate_change_button", "id", application.packageName))
         rateButton?.setOnClickListener {
             var rate = playbackRate
             when (playbackRate) {
@@ -155,20 +153,21 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             setPlaybackSpeed(rate)
         }
 
-        fullscreenButton = findViewById(R.id.fullscreen_button)
+        fullscreenButton = findViewById(resources.getIdentifier("fullscreen_button", "id", application.packageName))
         fullscreenButton?.setOnClickListener {
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_exit_white)
+                fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_exit_white", "drawable", application.packageName))
                 orientation = Configuration.ORIENTATION_LANDSCAPE
             } else {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_white)
+                fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_white", "drawable", application.packageName))
+
                 orientation = Configuration.ORIENTATION_PORTRAIT
             }
         }
 
-        closeButton = findViewById(R.id.close_button)
+        closeButton = findViewById(resources.getIdentifier("close_button", "id", application.packageName))
         closeButton?.setOnClickListener {
             finish()
         }
@@ -232,7 +231,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initializePlayer()
         } else {
-            showToast(R.string.storage_permission_denied)
+            showToast(resources.getIdentifier("storage_permission_denied", "string", application.packageName))
             finish()
         }
     }
@@ -253,10 +252,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_white)
+            fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_white", "drawable", application.packageName))
             orientation = Configuration.ORIENTATION_PORTRAIT
         } else {
-            fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_exit_white)
+            fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_exit_white", "drawable", application.packageName))
             orientation = Configuration.ORIENTATION_LANDSCAPE
         }
     }
@@ -514,7 +513,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     private inner class PlayerErrorMessageProvider : ErrorMessageProvider<ExoPlaybackException> {
         override fun getErrorMessage(throwable: ExoPlaybackException): Pair<Int, String> {
-            var errorString = getString(R.string.error_generic)
+            var errorString = getString(resources.getIdentifier("error_generic", "string", application.packageName))
 
             if (throwable.type == ExoPlaybackException.TYPE_RENDERER) {
                 val cause = throwable.rendererException
@@ -522,14 +521,20 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                     val decoderInitializationException = cause
                     decoderInitializationException.codecInfo?.also {
                         if (decoderInitializationException.cause is MediaCodecUtil.DecoderQueryException) {
-                            errorString = getString(R.string.error_querying_decoders)
+                            errorString = getString(resources.getIdentifier("error_querying_decoders", "string", application.packageName))
                         } else if (decoderInitializationException.secureDecoderRequired) {
-                            errorString = getString(R.string.error_no_secure_decoder, decoderInitializationException.mimeType)
+                            errorString = getString(
+                                    resources.getIdentifier("error_no_secure_decoder", "string", application.packageName),
+                                    decoderInitializationException.mimeType)
                         } else {
-                            errorString = getString(R.string.error_no_decoder, decoderInitializationException.mimeType)
+                            errorString = getString(
+                                    resources.getIdentifier("error_no_decoder", "string", application.packageName),
+                                    decoderInitializationException.mimeType)
                         }
                     } ?: run {
-                        errorString = getString(R.string.error_instantiating_decoder, decoderInitializationException.codecInfo?.name)
+                        errorString = getString(
+                                resources.getIdentifier("error_instantiating_decoder", "string", application.packageName),
+                                decoderInitializationException.codecInfo?.name)
                     }
                 }
             }
