@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="TrackSelectionDialogThemeOverlay" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="windowNoTitle">false</item>
+    </style>
+
+    <style name="PlayerTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+
+    <style name="PlayerTheme.Spherical">
+        <item name="surface_type">spherical_gl_surface_view</item>
+    </style>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light" />
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    // customize controller icon
+    <style name="ControllerButton">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:layout_width">@dimen/exo_media_button_width</item>
+        <item name="android:layout_height">@dimen/exo_media_button_height</item>
+    </style>
+    <style name="ControllerButton.FastForward">
+        <item name="android:src">@drawable/ic_forward_10_white</item>
+        <item name="android:contentDescription">@string/exo_controls_fastforward_description</item>
+    </style>
+    <style name="ControllerButton.Rewind">
+        <item name="android:src">@drawable/ic_rewind_10_white</item>
+        <item name="android:contentDescription">@string/exo_controls_rewind_description</item>
+    </style>
+
+</resources>

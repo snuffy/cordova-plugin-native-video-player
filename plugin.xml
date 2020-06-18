@@ -17,8 +17,45 @@
       </feature>
     </config-file>
 
+    <edit-config file="AndroidManifest.xml" target="/manifest" mode="merge">
+        <manifest xmlns:tools="http://schemas.android.com/tools" />
+    </edit-config>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+        <activity
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:name="jp.rabee.PlayerActivity"
+            android:theme="@style/PlayerTheme"
+            android:label="PlayerActivity"
+            android:launchMode="singleTop"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            tools:targetApi="n">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+    </config-file>
+
     <!-- soruce -->
-    <source-file src="src/android/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/java/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/java/MediaItem.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/java/PlayerActivity.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+
+    <!-- res -->
+    <resource-file src="src/android/layout/activity_player.xml" target="res/layout/activity_player.xml"/>
+    <resource-file src="src/android/layout/controller_view.xml" target="res/layout/controller_view.xml"/>
+
+    <resource-file src="src/android/values/player_strings.xml" target="res/values/player_strings.xml"/>
+    <resource-file src="src/android/values/styles.xml" target="res/values/styles.xml"/>
+
+    <resource-file src="src/android/drawable/ic_fullscreen_white.xml" target="res/drawable/ic_fullscreen_white.xml"/>
+    <resource-file src="src/android/drawable/ic_fullscreen_exit_white.xml" target="res/drawable/ic_fullscreen_exit_white.xml"/>
+    <resource-file src="src/android/drawable/ic_forward_10_white.xml" target="res/drawable/ic_forward_10_white.xml"/>
+    <resource-file src="src/android/drawable/ic_rewind_10_white.xml" target="res/drawable/ic_rewind_10_white.xml"/>
+    <resource-file src="src/android/drawable/ic_close_white.xml" target="res/drawable/ic_close_white.xml"/>
+    <resource-file src="src/android/drawable/ic_speed_white.xml" target="res/drawable/ic_speed_white.xml"/>
 
     <!--gradle file-->
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
