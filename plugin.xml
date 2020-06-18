@@ -40,6 +40,7 @@
 
     <!-- soruce -->
     <source-file src="src/android/java/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/java/GlideThumbnailTransformation.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
     <source-file src="src/android/java/MediaItem.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
     <source-file src="src/android/java/PlayerActivity.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
 
