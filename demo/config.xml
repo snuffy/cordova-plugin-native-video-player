@@ -20,6 +20,10 @@
         <allow-intent href="market:*" />
         <resource-file src="assets/sample1.mp3" target="app/src/main/assets/sample/sample1.mp3" />
         <resource-file src="assets/sample2.mp4" target="app/src/main/assets/sample/sample2.mp4" />
+
+        <edit-config file="AndroidManifest.xml" target="/manifest/application" mode="merge">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
