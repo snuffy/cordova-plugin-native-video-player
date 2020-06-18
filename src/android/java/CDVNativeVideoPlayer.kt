@@ -13,12 +13,9 @@ class CDVNativeVideoPlayer : CordovaPlugin() {
         LOG.d(TAG, "hi! This is CDVKeepAwake. Now intitilaizing ...");
     }
 
-    // js 側で関数が実行されるとこの関数がまず発火する
     override fun execute(action: String, data: JSONArray, callbackContext: CallbackContext): Boolean {
         var result = false
 
-        //TODO:
-        // SeekPreviewの対応
         when(action) {
             "start" -> {
                 val params = data.getJSONArray(0);

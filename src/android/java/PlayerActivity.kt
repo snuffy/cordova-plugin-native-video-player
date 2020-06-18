@@ -14,12 +14,11 @@ import android.os.Bundle
 import android.util.Pair
 import android.view.View
 import android.webkit.MimeTypeMap
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
 import com.github.rubensousa.previewseekbar.PreviewBar
 import com.github.rubensousa.previewseekbar.PreviewLoader
 import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
@@ -60,6 +59,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     private var rateButton : Button? = null
     private var fullscreenButton : ImageButton? = null
     private var closeButton : ImageButton? = null
+    private var previewImageView : ImageView? = null
     private var lastSeenTrackGroupArray : TrackGroupArray? = null
     private var trackSelector : DefaultTrackSelector? = null
     private var trackSelectorParameters : DefaultTrackSelector.Parameters? = null
@@ -179,6 +179,8 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         closeButton?.setOnClickListener {
             finish()
         }
+
+        previewImageView = findViewById(resources.getIdentifier("imageView", "id", application.packageName))
 
         dataSourceFactory = buildDataSourceFactory()
 
@@ -487,6 +489,9 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             if (playbackState == Player.STATE_ENDED) {
                 showControls()
             }
+            if (playbackState == Player.STATE_READY && playWhenReady) {
+                previewTimeBar?.hidePreview()
+            }
         }
 
         override fun onPlayerError(error: ExoPlaybackException) {
@@ -505,7 +510,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                         val item = items[player.currentTag as Int]
                         titleView?.text = item.title
                         item.source?.let {
-                            val mimeType = getMimeType(it)
+                            val mimeType = getMimeType(URLDecoder.decode(it, "UTF-8"))
                             if (mimeType != null && mimeType.startsWith("video")) {
                                 titleView?.visibility = View.INVISIBLE
                             } else {
@@ -556,19 +561,29 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         }
 
         override fun onScrubStart(previewBar: PreviewBar?) {
-//            player.playWhenReady = false
+            player?.playWhenReady = false
         }
 
         override fun onScrubStop(previewBar: PreviewBar?) {
-//            player.playWhenReady = true
+            player?.playWhenReady = true
         }
     }
 
     private inner class ImagePreviewLoader : PreviewLoader {
         override fun loadPreview(currentPosition: Long, max: Long) {
-            player?.run {
-                if (isPlaying) {
-                    playWhenReady = false
+            player?.let { player ->
+                if (player.isPlaying) {
+                    player.playWhenReady = false
+                }
+                items?.let { items ->
+                    previewImageView?.let {
+                        val item = items[player.currentTag as Int]
+                        Glide.with(it)
+                                .load(URLDecoder.decode(item.source, "UTF-8"))
+                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
+                                .transform(GlideThumbnailTransformation(currentPosition))
+                                .into(it)
+                    }
                 }
             }
         }
@@ -577,9 +592,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     // MARK: - PlayerControlView.VisibilityListener
 
     override fun onVisibilityChange(visibility: Int) {
-        controllerView?.apply {
-            this.visibility = visibility
-        }
+        controllerView?.visibility = visibility
     }
 
     // MARK: - PlaybackPreparer
@@ -588,4 +601,3 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         player?.retry()
     }
 }
-
