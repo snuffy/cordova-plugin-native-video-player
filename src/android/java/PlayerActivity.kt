@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Pair
 import android.view.View
+import android.view.WindowManager
 import android.webkit.MimeTypeMap
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -507,11 +508,19 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     private inner class PlayerEventListener : Player.EventListener {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            if (playbackState == Player.STATE_ENDED) {
-                showControls()
-            }
-            if (playbackState == Player.STATE_READY && playWhenReady) {
-                previewTimeBar?.hidePreview()
+            when (playbackState) {
+                Player.STATE_READY -> {
+                    if (playWhenReady) {
+                        previewTimeBar?.hidePreview()
+                    }
+                }
+                Player.STATE_BUFFERING -> {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+                Player.STATE_ENDED -> {
+                    showControls()
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
             }
         }
 
