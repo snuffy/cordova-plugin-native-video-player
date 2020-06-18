@@ -140,7 +140,8 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         previewTimeBar = findViewById(R.id.exo_progress)
         previewTimeBar?.apply {
             addOnScrubListener(PreviewChangeListener())
-            setPreviewLoader(ImagePreviewLoader())
+            // FIXME: サーバー側でminifyされたthumbnailが用意できれば解放する
+//            setPreviewLoader(ImagePreviewLoader())
         }
 
         titleView = findViewById(resources.getIdentifier("title_view", "id", application.packageName))
@@ -165,13 +166,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         fullscreenButton?.setOnClickListener {
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_exit_white", "drawable", application.packageName))
-                orientation = Configuration.ORIENTATION_LANDSCAPE
+                fullScreenToLandscape()
             } else {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_white", "drawable", application.packageName))
-
-                orientation = Configuration.ORIENTATION_PORTRAIT
+                fullScreenToPortrait()
             }
         }
 
@@ -195,13 +193,11 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onResume() {
         super.onResume()
 
-        // fullscreen
-        window.decorView.apply {
-            systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    )
+        // fullscreen on landscape
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            fullScreenToLandscape()
+        } else {
+            fullScreenToPortrait()
         }
 
         if (Util.SDK_INT <= 23 || player == null) {
@@ -262,11 +258,9 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_white", "drawable", application.packageName))
-            orientation = Configuration.ORIENTATION_PORTRAIT
+            fullScreenToPortrait()
         } else {
-            fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_exit_white", "drawable", application.packageName))
-            orientation = Configuration.ORIENTATION_LANDSCAPE
+            fullScreenToLandscape()
         }
     }
 
@@ -310,6 +304,33 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             } else {
                 this.enterPictureInPictureMode()
             }
+        }
+    }
+
+    private fun fullScreenToLandscape() {
+        fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_exit_white", "drawable", application.packageName))
+        orientation = Configuration.ORIENTATION_LANDSCAPE
+
+        playerView?.let {
+            it.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        }
+    }
+
+    private fun fullScreenToPortrait() {
+        fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_white", "drawable", application.packageName))
+        orientation = Configuration.ORIENTATION_PORTRAIT
+
+        playerView?.let {
+            it.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
         }
     }
 
