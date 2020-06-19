@@ -27,9 +27,10 @@
             android:name="jp.rabee.PlayerActivity"
             android:theme="@style/PlayerTheme"
             android:label="PlayerActivity"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
+            android:exported="false"
             tools:targetApi="n">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

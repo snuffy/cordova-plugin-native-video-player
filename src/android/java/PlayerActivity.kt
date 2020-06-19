@@ -104,6 +104,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(resources.getIdentifier("activity_player", "layout", application.packageName))
 
         savedInstanceState?.also {
             trackSelectorParameters = it.getParcelable(KEY_TRACK_SELECTOR_PARAMETERS)
@@ -115,6 +116,15 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             trackSelectorParameters = builder.build()
             clearStartPosition()
         }
+
+        controllerView = findViewById(resources.getIdentifier("controller_view", "id", application.packageName))
+        playerView = findViewById(resources.getIdentifier("player_view", "id", application.packageName))
+        previewTimeBar = findViewById(R.id.exo_progress)
+        titleView = findViewById(resources.getIdentifier("title_view", "id", application.packageName))
+        rateButton = findViewById(resources.getIdentifier("rate_change_button", "id", application.packageName))
+        fullscreenButton = findViewById(resources.getIdentifier("fullscreen_button", "id", application.packageName))
+        closeButton = findViewById(resources.getIdentifier("close_button", "id", application.packageName))
+        previewImageView = findViewById(resources.getIdentifier("imageView", "id", application.packageName))
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -128,25 +138,19 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onStart() {
         super.onStart()
-        setContentView(resources.getIdentifier("activity_player", "layout", application.packageName))
 
-        controllerView = findViewById(resources.getIdentifier("controller_view", "id", application.packageName))
-        playerView = findViewById(resources.getIdentifier("player_view", "id", application.packageName))
         playerView?.let {
             it.setControllerVisibilityListener(this)
             it.setErrorMessageProvider(PlayerErrorMessageProvider())
             it.requestFocus()
         }
 
-        previewTimeBar = findViewById(R.id.exo_progress)
         previewTimeBar?.apply {
             addOnScrubListener(PreviewChangeListener())
             // FIXME: サーバー側でminifyされたthumbnailが用意できれば解放する
 //            setPreviewLoader(ImagePreviewLoader())
         }
 
-        titleView = findViewById(resources.getIdentifier("title_view", "id", application.packageName))
-        rateButton = findViewById(resources.getIdentifier("rate_change_button", "id", application.packageName))
         rateButton?.setOnClickListener {
             var rate = playbackRate
             when (playbackRate) {
@@ -163,7 +167,6 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             setPlaybackSpeed(rate)
         }
 
-        fullscreenButton = findViewById(resources.getIdentifier("fullscreen_button", "id", application.packageName))
         fullscreenButton?.setOnClickListener {
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -174,12 +177,9 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             }
         }
 
-        closeButton = findViewById(resources.getIdentifier("close_button", "id", application.packageName))
         closeButton?.setOnClickListener {
             finish()
         }
-
-        previewImageView = findViewById(resources.getIdentifier("imageView", "id", application.packageName))
 
         dataSourceFactory = buildDataSourceFactory()
 
@@ -210,13 +210,14 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     }
 
     override fun onPause() {
-        super.onPause()
         if (Util.SDK_INT <= 23) {
             playerView?.apply {
                 onPause()
             }
             releasePlayer()
         }
+
+        super.onPause()
     }
 
     override fun onStop() {
@@ -267,9 +268,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onBackPressed() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && packageManager
-                        .hasSystemFeature(
-                                FEATURE_PICTURE_IN_PICTURE)){
+                && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
             enterPIPMode()
         } else {
             super.onBackPressed()
@@ -278,7 +277,6 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-
         enterPIPMode()
     }
 
@@ -306,12 +304,6 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     fun enterPIPMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
-            playerView?.apply {
-                useController = false
-            }
-            titleView?.apply {
-                textSize = 10.0f
-            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val params = PictureInPictureParams.Builder()
                 this.enterPictureInPictureMode(params.build())
