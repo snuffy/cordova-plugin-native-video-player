@@ -289,6 +289,16 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             playerView?.apply {
                 useController = true
             }
+            titleView?.apply {
+                textSize = 32.0f
+            }
+        } else {
+            playerView?.apply {
+                useController = false
+            }
+            titleView?.apply {
+                textSize = 10.0f
+            }
         }
     }
 
@@ -298,6 +308,9 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                 && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
             playerView?.apply {
                 useController = false
+            }
+            titleView?.apply {
+                textSize = 10.0f
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val params = PictureInPictureParams.Builder()
@@ -538,12 +551,13 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                 player?.let {  player ->
                     items?.let {items ->
                         val item = items[player.currentTag as Int]
-                        titleView?.text = item.title
                         item.source?.let {
                             val mimeType = getMimeType(URLDecoder.decode(it, "UTF-8"))
                             if (mimeType != null && mimeType.startsWith("video")) {
+                                titleView?.text = null
                                 titleView?.visibility = View.INVISIBLE
                             } else {
+                                titleView?.text = item.title
                                 titleView?.visibility = View.VISIBLE
                             }
                         }
