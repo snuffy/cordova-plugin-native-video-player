@@ -267,21 +267,24 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     }
 
     override fun onBackPressed() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
-            enterPIPMode()
-        } else {
-            super.onBackPressed()
-        }
+        //FIXME: pipModeで別タスク起動を解決できれば解放する
+        super.onBackPressed()
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+//                && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
+//            enterPIPMode()
+//        } else {
+//            super.onBackPressed()
+//        }
     }
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        enterPIPMode()
+        //FIXME: pipModeで別タスク起動を解決できれば解放する
+//        enterPIPMode()
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
-        (super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig))
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
         if (!isInPictureInPictureMode) {
             playerView?.apply {
