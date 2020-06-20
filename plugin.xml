@@ -21,7 +21,7 @@
         <manifest xmlns:tools="http://schemas.android.com/tools" />
     </edit-config>
 
-    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+    <config-file target="AndroidManifest.xml" parent="/manifest/application" mode="merge">
         <activity
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:name="jp.rabee.PlayerActivity"
