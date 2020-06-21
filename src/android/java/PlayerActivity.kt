@@ -2,27 +2,37 @@
 package jp.rabee
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.Notification
+import android.app.PendingIntent
 import android.app.PictureInPictureParams
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Pair
 import android.view.View
+import android.view.WindowManager
 import android.webkit.MimeTypeMap
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
+import com.github.rubensousa.previewseekbar.PreviewBar
+import com.github.rubensousa.previewseekbar.PreviewLoader
 import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
 import com.google.android.exoplayer2.source.*
@@ -31,6 +41,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerControlView
+import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -39,7 +50,7 @@ import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.GsonBuilder
-import jp.snuffy.nativeVideoPlayerTest.R
+import java.io.Serializable
 import java.net.URLDecoder
 import kotlin.math.max
 
@@ -59,6 +70,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     private var rateButton : Button? = null
     private var fullscreenButton : ImageButton? = null
     private var closeButton : ImageButton? = null
+    private var previewImageView : ImageView? = null
     private var lastSeenTrackGroupArray : TrackGroupArray? = null
     private var trackSelector : DefaultTrackSelector? = null
     private var trackSelectorParameters : DefaultTrackSelector.Parameters? = null
@@ -68,6 +80,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     private var startPosition = C.TIME_UNSET
     private var playbackRate = PLAYBACK_RATE_10
     private var orientation: Int = Configuration.ORIENTATION_PORTRAIT
+
+    // 通知マネージャー
+    private var playerNotificationManager: PlayerNotificationManager? = null
+    private var notificationId = 123456
 
     companion object {
         // TAG
@@ -102,6 +118,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(resources.getIdentifier("activity_player", "layout", application.packageName))
 
         savedInstanceState?.also {
             trackSelectorParameters = it.getParcelable(KEY_TRACK_SELECTOR_PARAMETERS)
@@ -113,6 +130,15 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             trackSelectorParameters = builder.build()
             clearStartPosition()
         }
+
+        controllerView = findViewById(resources.getIdentifier("controller_view", "id", application.packageName))
+        playerView = findViewById(resources.getIdentifier("player_view", "id", application.packageName))
+        previewTimeBar = findViewById(R.id.exo_progress)
+        titleView = findViewById(resources.getIdentifier("title_view", "id", application.packageName))
+        rateButton = findViewById(resources.getIdentifier("rate_change_button", "id", application.packageName))
+        fullscreenButton = findViewById(resources.getIdentifier("fullscreen_button", "id", application.packageName))
+        closeButton = findViewById(resources.getIdentifier("close_button", "id", application.packageName))
+        previewImageView = findViewById(resources.getIdentifier("imageView", "id", application.packageName))
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -126,19 +152,19 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onStart() {
         super.onStart()
-        setContentView(R.layout.activity_player)
 
-        controllerView = findViewById(R.id.controller_view)
-        playerView = findViewById(R.id.player_view)
         playerView?.let {
             it.setControllerVisibilityListener(this)
             it.setErrorMessageProvider(PlayerErrorMessageProvider())
             it.requestFocus()
         }
-        previewTimeBar = findViewById(R.id.exo_progress)
-        titleView = findViewById(R.id.title_view)
 
-        rateButton = findViewById(R.id.rate_change_button)
+        previewTimeBar?.apply {
+            addOnScrubListener(PreviewChangeListener())
+            // FIXME: サーバー側でminifyされたthumbnailが用意できれば解放する
+//            setPreviewLoader(ImagePreviewLoader())
+        }
+
         rateButton?.setOnClickListener {
             var rate = playbackRate
             when (playbackRate) {
@@ -155,20 +181,16 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             setPlaybackSpeed(rate)
         }
 
-        fullscreenButton = findViewById(R.id.fullscreen_button)
         fullscreenButton?.setOnClickListener {
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_exit_white)
-                orientation = Configuration.ORIENTATION_LANDSCAPE
+                fullScreenToLandscape()
             } else {
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_white)
-                orientation = Configuration.ORIENTATION_PORTRAIT
+                fullScreenToPortrait()
             }
         }
 
-        closeButton = findViewById(R.id.close_button)
         closeButton?.setOnClickListener {
             finish()
         }
@@ -186,17 +208,15 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onResume() {
         super.onResume()
 
-        // fullscreen
-        window.decorView.apply {
-            systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    )
+        // fullscreen on landscape
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            fullScreenToLandscape()
+        } else {
+            fullScreenToPortrait()
         }
 
         if (Util.SDK_INT <= 23 || player == null) {
-            initializePlayer()
+//            initializePlayer()
             playerView?.apply {
                 onResume()
             }
@@ -204,22 +224,23 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     }
 
     override fun onPause() {
-        super.onPause()
         if (Util.SDK_INT <= 23) {
-            playerView?.apply {
-                onPause()
-            }
-            releasePlayer()
+//            playerView?.apply {
+//                onPause()
+//            }
+//            releasePlayer()
         }
+
+        super.onPause()
     }
 
     override fun onStop() {
         super.onStop()
         if (Util.SDK_INT > 23) {
-            playerView?.apply {
-                onPause()
-            }
-            releasePlayer()
+//            playerView?.apply {
+//                onPause()
+//            }
+//            releasePlayer()
         }
     }
 
@@ -232,7 +253,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initializePlayer()
         } else {
-            showToast(R.string.storage_permission_denied)
+            showToast(resources.getIdentifier("storage_permission_denied", "string", application.packageName))
             finish()
         }
     }
@@ -253,37 +274,46 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_white)
-            orientation = Configuration.ORIENTATION_PORTRAIT
+            fullScreenToPortrait()
         } else {
-            fullscreenButton?.setImageResource(R.drawable.ic_fullscreen_exit_white)
-            orientation = Configuration.ORIENTATION_LANDSCAPE
+            fullScreenToLandscape()
         }
     }
 
     override fun onBackPressed() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && packageManager
-                        .hasSystemFeature(
-                                FEATURE_PICTURE_IN_PICTURE)){
-            enterPIPMode()
-        } else {
-            super.onBackPressed()
-        }
+        //FIXME: pipModeで別タスク起動を解決できれば解放する
+        super.onBackPressed()
+        releasePlayer()
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+//                && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
+//            enterPIPMode()
+//        } else {
+//            super.onBackPressed()
+//        }
     }
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-
-        enterPIPMode()
+        //FIXME: pipModeで別タスク起動を解決できれば解放する
+//        enterPIPMode()
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
-        (super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig))
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
         if (!isInPictureInPictureMode) {
             playerView?.apply {
                 useController = true
+            }
+            titleView?.apply {
+                textSize = 32.0f
+            }
+        } else {
+            playerView?.apply {
+                useController = false
+            }
+            titleView?.apply {
+                textSize = 10.0f
             }
         }
     }
@@ -292,9 +322,6 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     fun enterPIPMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                 && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
-            playerView?.apply {
-                useController = false
-            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val params = PictureInPictureParams.Builder()
                 this.enterPictureInPictureMode(params.build())
@@ -304,6 +331,35 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         }
     }
 
+    private fun fullScreenToLandscape() {
+        fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_exit_white", "drawable", application.packageName))
+        orientation = Configuration.ORIENTATION_LANDSCAPE
+
+        playerView?.let {
+            it.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        }
+    }
+
+    private fun fullScreenToPortrait() {
+        fullscreenButton?.setImageResource(resources.getIdentifier("ic_fullscreen_white", "drawable", application.packageName))
+        orientation = Configuration.ORIENTATION_PORTRAIT
+
+        playerView?.let {
+            it.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("ResourceType")
     private fun initializePlayer() {
         mediaSource = createTopLevelMediaSource()
 
@@ -324,6 +380,8 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                             it.playWhenReady = startAutoPlay
                             it.addListener(PlayerEventListener())
                             it.addAnalyticsListener(EventLogger(trackSelector))
+                            it.setWakeMode(1)
+                            it.setForegroundMode(true)
 
                             playerView?.apply {
                                 player = it
@@ -340,6 +398,57 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                             mediaSource?.let { mediaSource ->
                                 it.prepare(mediaSource)
                             }
+
+                            // 通知処理を追加する
+                            val self = this
+                            playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
+                                    this,
+                                    application.packageName,
+                                    R.string.exo_download_notification_channel_name,
+                                    notificationId,
+                                    object: PlayerNotificationManager.MediaDescriptionAdapter {
+                                        override fun createCurrentContentIntent(player: Player): PendingIntent? {
+
+                                            return null
+                                        }
+                                        override fun getCurrentContentTitle(player: Player): CharSequence {
+
+                                            val media = self.getCurrentMedia()
+                                            if (media != null) {
+                                                return media.title as CharSequence
+                                            }
+                                            else {
+                                                return "title"
+                                            }
+                                        }
+                                        override fun getCurrentContentText(player: Player): CharSequence? {
+                                            return null
+                                        }
+                                        override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
+                                            return null
+                                        }
+                                    },
+                                    // 通知コントローラー
+                                    object: PlayerNotificationManager.NotificationListener {
+                                        override fun onNotificationStarted(notificationId: Int, notification: Notification) {
+                                            val playerServiceIntent = Intent(self, PlayerService::class.java)
+                                            playerServiceIntent.putExtra("notification", notification)
+                                            playerServiceIntent.putExtra("notificationId", notificationId)
+                                            startForegroundService(playerServiceIntent)
+                                        }
+                                        override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+                                            self.releasePlayer()
+                                        }
+
+                                        override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
+                                        }
+                            })
+                            playerNotificationManager?.setPlayer(it)
+                            val session = MediaSessionCompat(applicationContext, "nativeVideoPlayer")
+                            session.isActive = true
+                            val connector = MediaSessionConnector(session)
+                            connector.setPlayer(it)
+                            playerNotificationManager?.setMediaSessionToken(session.sessionToken)
                         }
             }
         }
@@ -477,8 +586,19 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     private inner class PlayerEventListener : Player.EventListener {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            if (playbackState == Player.STATE_ENDED) {
-                showControls()
+            when (playbackState) {
+                Player.STATE_READY -> {
+                    if (playWhenReady) {
+                        previewTimeBar?.hidePreview()
+                    }
+                }
+                Player.STATE_BUFFERING -> {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+                Player.STATE_ENDED -> {
+                    showControls()
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
             }
         }
 
@@ -496,12 +616,13 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                 player?.let {  player ->
                     items?.let {items ->
                         val item = items[player.currentTag as Int]
-                        titleView?.text = item.title
                         item.source?.let {
-                            val mimeType = getMimeType(it)
+                            val mimeType = getMimeType(URLDecoder.decode(it, "UTF-8"))
                             if (mimeType != null && mimeType.startsWith("video")) {
+                                titleView?.text = null
                                 titleView?.visibility = View.INVISIBLE
                             } else {
+                                titleView?.text = item.title
                                 titleView?.visibility = View.VISIBLE
                             }
                         }
@@ -509,12 +630,13 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                 }
             }
             lastSeenTrackGroupArray = trackGroups
+            playerNotificationManager
         }
     }
 
     private inner class PlayerErrorMessageProvider : ErrorMessageProvider<ExoPlaybackException> {
         override fun getErrorMessage(throwable: ExoPlaybackException): Pair<Int, String> {
-            var errorString = getString(R.string.error_generic)
+            var errorString = getString(resources.getIdentifier("error_generic", "string", application.packageName))
 
             if (throwable.type == ExoPlaybackException.TYPE_RENDERER) {
                 val cause = throwable.rendererException
@@ -522,14 +644,20 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                     val decoderInitializationException = cause
                     decoderInitializationException.codecInfo?.also {
                         if (decoderInitializationException.cause is MediaCodecUtil.DecoderQueryException) {
-                            errorString = getString(R.string.error_querying_decoders)
+                            errorString = getString(resources.getIdentifier("error_querying_decoders", "string", application.packageName))
                         } else if (decoderInitializationException.secureDecoderRequired) {
-                            errorString = getString(R.string.error_no_secure_decoder, decoderInitializationException.mimeType)
+                            errorString = getString(
+                                    resources.getIdentifier("error_no_secure_decoder", "string", application.packageName),
+                                    decoderInitializationException.mimeType)
                         } else {
-                            errorString = getString(R.string.error_no_decoder, decoderInitializationException.mimeType)
+                            errorString = getString(
+                                    resources.getIdentifier("error_no_decoder", "string", application.packageName),
+                                    decoderInitializationException.mimeType)
                         }
                     } ?: run {
-                        errorString = getString(R.string.error_instantiating_decoder, decoderInitializationException.codecInfo?.name)
+                        errorString = getString(
+                                resources.getIdentifier("error_instantiating_decoder", "string", application.packageName),
+                                decoderInitializationException.codecInfo?.name)
                     }
                 }
             }
@@ -538,12 +666,43 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         }
     }
 
+    private inner class PreviewChangeListener : PreviewBar.OnScrubListener {
+        override fun onScrubMove(previewBar: PreviewBar?, progress: Int, fromUser: Boolean) {
+        }
+
+        override fun onScrubStart(previewBar: PreviewBar?) {
+            player?.playWhenReady = false
+        }
+
+        override fun onScrubStop(previewBar: PreviewBar?) {
+            player?.playWhenReady = true
+        }
+    }
+
+    private inner class ImagePreviewLoader : PreviewLoader {
+        override fun loadPreview(currentPosition: Long, max: Long) {
+            player?.let { player ->
+                if (player.isPlaying) {
+                    player.playWhenReady = false
+                }
+                items?.let { items ->
+                    previewImageView?.let {
+                        val item = items[player.currentTag as Int]
+                        Glide.with(it)
+                                .load(URLDecoder.decode(item.source, "UTF-8"))
+                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
+                                .transform(GlideThumbnailTransformation(currentPosition))
+                                .into(it)
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - PlayerControlView.VisibilityListener
 
     override fun onVisibilityChange(visibility: Int) {
-        controllerView?.apply {
-            this.visibility = visibility
-        }
+        controllerView?.visibility = visibility
     }
 
     // MARK: - PlaybackPreparer
