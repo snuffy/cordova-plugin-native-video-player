@@ -193,6 +193,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
         closeButton?.setOnClickListener {
             finish()
+            releasePlayer()
         }
 
         dataSourceFactory = buildDataSourceFactory()
@@ -452,6 +453,16 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                         }
             }
         }
+    }
+
+    private fun getCurrentMedia() : MediaItem? {
+        player?.let {  player ->
+            items?.let {items ->
+                return items[player.currentTag as Int]
+            }
+        }
+
+        return null
     }
 
     private fun createTopLevelMediaSource() : ConcatenatingMediaSource {
