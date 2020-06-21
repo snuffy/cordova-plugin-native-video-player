@@ -574,10 +574,29 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     }
 
     private fun getMimeType(url: String): String? {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(url)
-        extension?.let {
-            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        var extension:String
+        var path = url
+        if (url.startsWith("file://")) {
+            val file = File(url.removePrefix("file://"))
+            val name = file.name
+            val ext = name.substring(name.lastIndexOf(".")).removePrefix(".")
+            var type = when(ext) {
+                "mp4" ->  "video/$ext"
+                "mp3", "mp2", "mpga" -> "audio/mpeg"
+                "wav" -> "audio/x-wav"
+                "mpeg", "mpg", "mpe" -> "video/mpeg"
+                else -> ""
+            }
+            return type
+
         }
+        else {
+            extension = MimeTypeMap.getFileExtensionFromUrl(path)
+            extension?.let {
+                return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            }
+        }
+
         return null
     }
 
