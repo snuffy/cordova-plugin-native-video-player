@@ -21,6 +21,11 @@
         <manifest xmlns:tools="http://schemas.android.com/tools" />
     </edit-config>
 
+    <config-file target="AndroidManifest.xml" parent="/*" mode="merge">
+        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        <uses-permission android:name="android.permission.WAKE_LOCK" />
+    </config-file>
+
     <config-file target="AndroidManifest.xml" parent="/manifest/application" mode="merge">
         <activity
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
@@ -44,6 +49,7 @@
     <source-file src="src/android/java/GlideThumbnailTransformation.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
     <source-file src="src/android/java/MediaItem.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
     <source-file src="src/android/java/PlayerActivity.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
+    <source-file src="src/android/java/PlayerService.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
 
     <!-- res -->
     <resource-file src="src/android/layout/activity_player.xml" target="res/layout/activity_player.xml"/>

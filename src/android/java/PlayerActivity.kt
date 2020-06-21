@@ -2,20 +2,27 @@
 package jp.rabee
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.Notification
+import android.app.PendingIntent
 import android.app.PictureInPictureParams
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Pair
 import android.view.View
 import android.view.WindowManager
 import android.webkit.MimeTypeMap
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
@@ -25,6 +32,7 @@ import com.github.rubensousa.previewseekbar.PreviewLoader
 import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil
 import com.google.android.exoplayer2.source.*
@@ -33,6 +41,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerControlView
+import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -41,6 +50,7 @@ import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.GsonBuilder
+import java.io.Serializable
 import java.net.URLDecoder
 import kotlin.math.max
 
@@ -70,6 +80,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     private var startPosition = C.TIME_UNSET
     private var playbackRate = PLAYBACK_RATE_10
     private var orientation: Int = Configuration.ORIENTATION_PORTRAIT
+
+    // 通知マネージャー
+    private var playerNotificationManager: PlayerNotificationManager? = null
+    private var notificationId = 123456
 
     companion object {
         // TAG
@@ -202,7 +216,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         }
 
         if (Util.SDK_INT <= 23 || player == null) {
-            initializePlayer()
+//            initializePlayer()
             playerView?.apply {
                 onResume()
             }
@@ -211,10 +225,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onPause() {
         if (Util.SDK_INT <= 23) {
-            playerView?.apply {
-                onPause()
-            }
-            releasePlayer()
+//            playerView?.apply {
+//                onPause()
+//            }
+//            releasePlayer()
         }
 
         super.onPause()
@@ -223,10 +237,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onStop() {
         super.onStop()
         if (Util.SDK_INT > 23) {
-            playerView?.apply {
-                onPause()
-            }
-            releasePlayer()
+//            playerView?.apply {
+//                onPause()
+//            }
+//            releasePlayer()
         }
     }
 
@@ -269,6 +283,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     override fun onBackPressed() {
         //FIXME: pipModeで別タスク起動を解決できれば解放する
         super.onBackPressed()
+        releasePlayer()
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 //                && packageManager.hasSystemFeature(FEATURE_PICTURE_IN_PICTURE)) {
 //            enterPIPMode()
@@ -343,6 +358,8 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("ResourceType")
     private fun initializePlayer() {
         mediaSource = createTopLevelMediaSource()
 
@@ -363,6 +380,8 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                             it.playWhenReady = startAutoPlay
                             it.addListener(PlayerEventListener())
                             it.addAnalyticsListener(EventLogger(trackSelector))
+                            it.setWakeMode(1)
+                            it.setForegroundMode(true)
 
                             playerView?.apply {
                                 player = it
@@ -379,6 +398,57 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                             mediaSource?.let { mediaSource ->
                                 it.prepare(mediaSource)
                             }
+
+                            // 通知処理を追加する
+                            val self = this
+                            playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
+                                    this,
+                                    application.packageName,
+                                    R.string.exo_download_notification_channel_name,
+                                    notificationId,
+                                    object: PlayerNotificationManager.MediaDescriptionAdapter {
+                                        override fun createCurrentContentIntent(player: Player): PendingIntent? {
+
+                                            return null
+                                        }
+                                        override fun getCurrentContentTitle(player: Player): CharSequence {
+
+                                            val media = self.getCurrentMedia()
+                                            if (media != null) {
+                                                return media.title as CharSequence
+                                            }
+                                            else {
+                                                return "title"
+                                            }
+                                        }
+                                        override fun getCurrentContentText(player: Player): CharSequence? {
+                                            return null
+                                        }
+                                        override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
+                                            return null
+                                        }
+                                    },
+                                    // 通知コントローラー
+                                    object: PlayerNotificationManager.NotificationListener {
+                                        override fun onNotificationStarted(notificationId: Int, notification: Notification) {
+                                            val playerServiceIntent = Intent(self, PlayerService::class.java)
+                                            playerServiceIntent.putExtra("notification", notification)
+                                            playerServiceIntent.putExtra("notificationId", notificationId)
+                                            startForegroundService(playerServiceIntent)
+                                        }
+                                        override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+                                            self.releasePlayer()
+                                        }
+
+                                        override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
+                                        }
+                            })
+                            playerNotificationManager?.setPlayer(it)
+                            val session = MediaSessionCompat(applicationContext, "nativeVideoPlayer")
+                            session.isActive = true
+                            val connector = MediaSessionConnector(session)
+                            connector.setPlayer(it)
+                            playerNotificationManager?.setMediaSessionToken(session.sessionToken)
                         }
             }
         }
@@ -560,6 +630,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                 }
             }
             lastSeenTrackGroupArray = trackGroups
+            playerNotificationManager
         }
     }
 
