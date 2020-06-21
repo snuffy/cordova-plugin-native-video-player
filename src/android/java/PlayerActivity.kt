@@ -444,6 +444,10 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                                         }
 
                                         override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
+                                            val playerServiceIntent = Intent(self, PlayerService::class.java)
+                                            playerServiceIntent.putExtra("notification", notification)
+                                            playerServiceIntent.putExtra("notificationId", notificationId)
+                                            startForegroundService(playerServiceIntent)
                                         }
                             })
                             playerNotificationManager?.setPlayer(it)
