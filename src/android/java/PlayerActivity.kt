@@ -50,7 +50,9 @@ import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.GsonBuilder
+import java.io.File
 import java.io.Serializable
+import java.net.URL
 import java.net.URLDecoder
 import kotlin.math.max
 
