@@ -2,6 +2,7 @@
 package jp.rabee
 
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.Activity
 import android.app.Notification
 import android.app.PendingIntent
@@ -361,8 +362,6 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("ResourceType")
     private fun initializePlayer() {
         mediaSource = createTopLevelMediaSource()
 
@@ -411,13 +410,12 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                                     notificationId,
                                     object: PlayerNotificationManager.MediaDescriptionAdapter {
                                         override fun createCurrentContentIntent(player: Player): PendingIntent? {
-
                                             return null
                                         }
                                         override fun getCurrentContentTitle(player: Player): CharSequence {
-
                                             val media = self.getCurrentMedia()
                                             if (media != null) {
+                                                updateTitleView()
                                                 return media.title as CharSequence
                                             }
                                             else {
@@ -434,20 +432,14 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                                     // 通知コントローラー
                                     object: PlayerNotificationManager.NotificationListener {
                                         override fun onNotificationStarted(notificationId: Int, notification: Notification) {
-                                            val playerServiceIntent = Intent(self, PlayerService::class.java)
-                                            playerServiceIntent.putExtra("notification", notification)
-                                            playerServiceIntent.putExtra("notificationId", notificationId)
-                                            startForegroundService(playerServiceIntent)
+                                            startBackgroundNotification(notificationId, notification)
                                         }
                                         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
                                             self.releasePlayer()
                                         }
 
                                         override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-                                            val playerServiceIntent = Intent(self, PlayerService::class.java)
-                                            playerServiceIntent.putExtra("notification", notification)
-                                            playerServiceIntent.putExtra("notificationId", notificationId)
-                                            startForegroundService(playerServiceIntent)
+                                            startBackgroundNotification(notificationId, notification)
                                         }
                             })
                             playerNotificationManager?.setPlayer(it)
@@ -459,6 +451,14 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                         }
             }
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private fun startBackgroundNotification(notificationId: Int, notification: Notification) {
+        val playerServiceIntent = Intent(this, PlayerService::class.java)
+        playerServiceIntent.putExtra("notification", notification)
+        playerServiceIntent.putExtra("notificationId", notificationId)
+        startForegroundService(playerServiceIntent)
     }
 
     private fun getCurrentMedia() : MediaItem? {
@@ -623,8 +623,9 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     private inner class PlayerEventListener : Player.EventListener {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
+
                 Player.STATE_READY -> {
-                    if (playWhenReady) {
+                        if (playWhenReady) {
                         previewTimeBar?.hidePreview()
                     }
                 }
@@ -647,26 +648,32 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             }
         }
 
+
         override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {
             if (trackGroups != lastSeenTrackGroupArray) {
-                player?.let {  player ->
-                    items?.let {items ->
-                        val item = items[player.currentTag as Int]
-                        item.source?.let {
-                            val mimeType = getMimeType(URLDecoder.decode(it, "UTF-8"))
-                            if (mimeType != null && mimeType.startsWith("video")) {
-                                titleView?.text = null
-                                titleView?.visibility = View.INVISIBLE
-                            } else {
-                                titleView?.text = item.title
-                                titleView?.visibility = View.VISIBLE
-                            }
-                        }
-                    }
-                }
+                updateTitleView()
             }
             lastSeenTrackGroupArray = trackGroups
             playerNotificationManager
+        }
+    }
+
+    private fun updateTitleView() {
+        player?.let {  player ->
+            items?.let {items ->
+                val item = items[player.currentTag as Int]
+                print(item)
+                item.source?.let {
+                    val mimeType = getMimeType(URLDecoder.decode(it, "UTF-8"))
+                    if (mimeType != null && mimeType.startsWith("video")) {
+                        titleView?.text = null
+                        titleView?.visibility = View.INVISIBLE
+                    } else {
+                        titleView?.text = item.title
+                        titleView?.visibility = View.VISIBLE
+                    }
+                }
+            }
         }
     }
 
