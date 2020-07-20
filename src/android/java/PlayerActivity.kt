@@ -201,11 +201,9 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
         dataSourceFactory = buildDataSourceFactory()
 
-        if (Util.SDK_INT > 23) {
-            initializePlayer()
-            playerView?.apply {
-                onResume()
-            }
+        initializePlayer()
+        playerView?.apply {
+            onResume()
         }
     }
 
@@ -458,7 +456,11 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
         val playerServiceIntent = Intent(this, PlayerService::class.java)
         playerServiceIntent.putExtra("notification", notification)
         playerServiceIntent.putExtra("notificationId", notificationId)
-        startForegroundService(playerServiceIntent)
+
+        if (Util.SDK_INT >= 26) {
+          startForegroundService(playerServiceIntent)
+        }
+
     }
 
     private fun getCurrentMedia() : MediaItem? {
