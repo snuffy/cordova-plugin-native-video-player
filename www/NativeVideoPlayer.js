@@ -1,37 +1,35 @@
 'use strict';
 
-var exec = require('cordova/exec');
+var exec = require('cordova/exec'); // cordova exec
 
-// cordova exec
+
 var _NativeVideoPlayer = {
-  start: (onSuccess, onFail, param) => {
+  start: function start(onSuccess, onFail, param) {
     return exec(onSuccess, onFail, 'NativeVideoPlayer', 'start', [param]);
   },
-  stop: (onSuccess, onFail, param) => {
+  stop: function stop(onSuccess, onFail, param) {
     return exec(onSuccess, onFail, 'NativeVideoPlayer', 'stop', [param]);
-  },
-};
+  }
+}; // Promise wrapper
 
-// Promise wrapper
 var NativeVideoPlayer = {
-  start: (params) => {
-    return new Promise((resolve, reject) => {
-      _NativeVideoPlayer.start((res) => {
+  start: function start(params) {
+    return new Promise(function (resolve, reject) {
+      _NativeVideoPlayer.start(function (res) {
         resolve(res);
-      }, (err) => {
+      }, function (err) {
         reject(err);
       }, params);
     });
   },
-  stop: (params) => {
-    return new Promise((resolve, reject) => {
-      _NativeVideoPlayer.stop((res) => {
+  stop: function stop(params) {
+    return new Promise(function (resolve, reject) {
+      _NativeVideoPlayer.stop(function (res) {
         resolve(res);
-      }, (err) => {
+      }, function (err) {
         reject(err);
       }, params);
     });
-  },
-}
-
+  }
+};
 module.exports = NativeVideoPlayer;

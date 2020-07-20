@@ -22,6 +22,13 @@
     "url": "https://github.com/snuffy/cordova-plugin-native-video-player/issues"
   },
   "dependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-remote": "^0.0.3",
+    "gulp-rename": "^2.0.0",
     "xml2js": "^0.4.19"
   },
   "homepage": "https://github.com/snuffy/cordova-plugin-native-video-player#readme",
