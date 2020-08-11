@@ -259,20 +259,24 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         player.vc_viewWillDisappear()
-        player.assetURL = nil
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         player.vc_viewDidDisappear()
         player.assetURL = nil
+        player.stop()
+        player = nil
+        playlist = []
     }
     
     @objc func tappedClose(_ sender: UIButton) {
         player.controlLayerNeedAppear()
         PIPKit.dismiss(animated: true)
-        player.assetURL = nil
+        UIApplication.shared.endReceivingRemoteControlEvents()
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = [:]
         NotificationCenter.default.post(name: Notification.Name.CDVNVPDidClose, object: nil)
+        
     }
     
     @objc func touchStart(_ sender: UIButton) {
