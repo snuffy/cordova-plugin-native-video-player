@@ -369,23 +369,29 @@ class VGMediaViewController: UIViewController, ConstraintRelatableTarget, PIPUsa
         commandCenter.skipBackwardCommand.isEnabled = false
         commandCenter.skipForwardCommand.isEnabled = false
 
-        commandCenter.togglePlayPauseCommand.addTarget(handler: { [unowned self] commandEvent -> MPRemoteCommandHandlerStatus in
+        commandCenter.togglePlayPauseCommand.addTarget(handler: { [weak self] commandEvent -> MPRemoteCommandHandlerStatus in
+            guard let self = self else {return .commandFailed}
             self.remoteTogglePlayPause(commandEvent)
             return MPRemoteCommandHandlerStatus.success
         })
-        commandCenter.playCommand.addTarget(handler: { [unowned self] commandEvent -> MPRemoteCommandHandlerStatus in
+        commandCenter.playCommand.addTarget(handler: { [weak self] commandEvent -> MPRemoteCommandHandlerStatus in
+            guard let self = self else {return .commandFailed}
             self.remotePlay(commandEvent)
             return .success
         })
-        commandCenter.pauseCommand.addTarget(handler: { [unowned self] commandEvent -> MPRemoteCommandHandlerStatus in
+        commandCenter.pauseCommand.addTarget(handler: { [weak self] commandEvent -> MPRemoteCommandHandlerStatus in
+            guard let self = self else {return .commandFailed}
             self.remotePause(commandEvent)
             return .success
         })
-        commandCenter.nextTrackCommand.addTarget(handler: { [unowned self] commandEvent -> MPRemoteCommandHandlerStatus in
+        
+        commandCenter.nextTrackCommand.addTarget(handler: { [weak self] commandEvent -> MPRemoteCommandHandlerStatus in
+            guard let self = self else {return .commandFailed}
             self.remoteNextTrack(commandEvent)
             return .success
         })
-        commandCenter.previousTrackCommand.addTarget(handler: { [unowned self] commandEvent -> MPRemoteCommandHandlerStatus in
+        commandCenter.previousTrackCommand.addTarget(handler: { [weak self] commandEvent -> MPRemoteCommandHandlerStatus in
+            guard let self = self else {return .commandFailed}
             self.remotePrevTrack(commandEvent)
             return .success
         })
