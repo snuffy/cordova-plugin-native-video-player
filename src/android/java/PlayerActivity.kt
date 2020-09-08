@@ -248,6 +248,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onDestroy() {
         super.onDestroy()
+        playerNotificationManager?.setPlayer(null)
         releaseAdsLoader()
     }
 
