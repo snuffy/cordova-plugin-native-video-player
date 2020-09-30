@@ -81,6 +81,11 @@
       </feature>
       <preference name="deployment-target" value="11.0" />
     </config-file>
+    <config-file target="*-Info.plist" parent="UIBackgroundModes">
+      <array>
+        <string>audio</string>
+      </array>
+    </config-file>
 
     <header-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
     <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
