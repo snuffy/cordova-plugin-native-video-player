@@ -304,6 +304,7 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
         
         let nextMusic = playlist[currentIndex]
         let playerItem = AVPlayerItem(url: nextMusic.source)
+        playerItem.addObserver(self, forKeyPath: "playbackLikelyToKeepUp", options: .new, context: nil)
         player?.replaceCurrentItem(with: playerItem)
         player?.playImmediately(atRate: rate)
         
@@ -322,6 +323,7 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
         currentIndex -= 1
         let prevVideo = playlist[currentIndex]
         let playerItem = AVPlayerItem(url: prevVideo.source)
+        playerItem.addObserver(self, forKeyPath: "playbackLikelyToKeepUp", options: .new, context: nil)
         player?.replaceCurrentItem(with: playerItem)
         player?.playImmediately(atRate: rate)
         
@@ -378,6 +380,7 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
         if playlist.count > 0 {
             currentIndex = 0
             let playerItem = AVPlayerItem(url: playlist[currentIndex].source)
+            playerItem.addObserver(self, forKeyPath: "playbackLikelyToKeepUp", options: .new, context: nil)
             player?.replaceCurrentItem(with: playerItem)
             player?.playImmediately(atRate: rate)
             updateTitleTextView()
