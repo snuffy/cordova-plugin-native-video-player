@@ -6,7 +6,7 @@ import SJVideoPlayer
 @objc(CDVNativeVideoPlayer) class CDVNativeVideoPlayer : CDVPlugin {
 
     override func pluginInitialize() {
-        
+        // setup audio session
         do {
             try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback)
             try AVAudioSession.sharedInstance().setActive(true)
@@ -17,34 +17,35 @@ import SJVideoPlayer
         catch {
             // TODO error
         }
-
     };
 
     @objc func start(_ command: CDVInvokedUrlCommand) {
-        
-        // get media
+        // js から受け取った playlist を [MediaItem] に変換
         let data = command.argument(at: 0) as! [[String:String]]
         var playlist: [MediaItem] = []
         data.forEach { (item) in
             guard let title = item["title"]?.removingPercentEncoding,
-                    let album = item["album"]?.removingPercentEncoding,
-                    var source = item["source"]?.removingPercentEncoding
+                let album = item["album"]?.removingPercentEncoding,
+                let source = item["source"]?.removingPercentEncoding
+            else {return}
+            
+            // source が web なのか file なのかを判定する
+            let regularURL = source.replacingOccurrences(of: "file://", with: "")
+            var url: URL?
+            //
+            if regularURL.contains("http://") || regularURL.contains("https://") {
+                url = URL(string: regularURL)
+            }
             else {
-                return
+                url = URL(fileURLWithPath: regularURL)
             }
+            guard let sourceURL = url else {return}
             
-            // get source
-            if let range = source.range(of: "file://") {
-                source.replaceSubrange(range, with: "")
-                print(source)
-                let u = URL(fileURLWithPath:source)
-                let m = MediaItem(title: title, album: album, source: u)
-                playlist.append(m)
-            }
-            
+            let m = MediaItem(title: title, album: album, source: sourceURL)
+            playlist.append(m)
         }
-
-        let vc = VGMediaViewController()
+        
+        let vc = CDVNativeVideoPlayerLayoutViewController()
         vc.playlist = playlist
         PIPKit.show(with: vc)
     }
@@ -56,7 +57,6 @@ import SJVideoPlayer
     }
     
     @objc func close(_ notification: Notification) {
-        print("close!!!!")
         resetWebviewSize()
     }
     
