@@ -1,7 +1,6 @@
 import UIKit
 import AVFoundation
 import PIPKit
-import SJVideoPlayer
 
 @objc(CDVNativeVideoPlayer) class CDVNativeVideoPlayer : CDVPlugin {
 
@@ -45,9 +44,11 @@ import SJVideoPlayer
             playlist.append(m)
         }
         
-        let vc = CDVNativeVideoPlayerLayoutViewController()
-        vc.playlist = playlist
-        PIPKit.show(with: vc)
+        if #available(iOS 11.0, *) {
+            let vc = CDVNativeVideoPlayerLayoutViewController()
+            vc.playlist = playlist
+            PIPKit.show(with: vc)
+        }
     }
 
     @objc func stop(_ command: CDVInvokedUrlCommand) {

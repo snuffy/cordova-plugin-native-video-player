@@ -98,10 +98,7 @@
         <source url="https://github.com/CocoaPods/Specs.git"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="SnapKit" spec="~> 5.0.0" />
         <pod name="PIPKit" spec="~> 0.2.0" />
-        <pod name="SJBaseVideoPlayer" options=":git => 'https://github.com/changsanjiang/SJBaseVideoPlayer.git'"/>
-        <pod name="SJVideoPlayer" options=":git => 'https://github.com/changsanjiang/SJVideoPlayer.git'"/>
       </pods>
     </podspec>
     <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
