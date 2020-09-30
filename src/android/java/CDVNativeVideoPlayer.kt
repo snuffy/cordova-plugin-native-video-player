@@ -15,7 +15,11 @@ import java.net.URLDecoder
 class CDVNativeVideoPlayer : CordovaPlugin() {
 
     override public fun initialize(cordova: CordovaInterface,  webView: CordovaWebView) {
-        LOG.d(TAG, "hi! This is CDVKeepAwake. Now intitilaizing ...");
+        LOG.d(TAG, "hi! This is CDVNativeVideoPlayer. Now intitilaizing ...");
+    }
+
+    override  public fun onDestroy() {
+        PlayerActivity.activity?.playerNotificationManager?.setPlayer(null)
     }
 
     override fun execute(action: String, data: JSONArray, callbackContext: CallbackContext): Boolean {
