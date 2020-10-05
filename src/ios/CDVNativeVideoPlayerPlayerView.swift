@@ -22,6 +22,9 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
     let pauseImage = CDVNVPResoucesLoader().getImage(named: "pause")!
     let playImage = CDVNVPResoucesLoader().getImage(named: "play")!
     
+    let pipinImage = CDVNVPResoucesLoader().getImage(named: "pipin")!
+    let fullScreenImage = CDVNVPResoucesLoader().getImage(named: "fullscreen")!
+    
     let titleTextView: UILabel = {
         var textView = UILabel()
         textView.textColor = .white
@@ -166,8 +169,6 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
     // pip button
     lazy var pipButton: UIButton = {
         let button = UIButton(type: .system)
-        let image = CDVNVPResoucesLoader().getImage(named: "pipin")
-        guard let pipinImage = image else {return button}
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(pipinImage, for: .normal)
         button.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.7956095951)
@@ -228,13 +229,13 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
         if PIPKit.isPIP {
             closeButton.isHidden = false
             controlsStack.isHidden = false
-            // pipButton.setImage(fullScreenImage, for: .normal)
+            pipButton.setImage(pipinImage, for: .normal)
             NotificationCenter.default.post(name: .nativeVideoPlayerChangeToFull, object: nil, userInfo: nil)
             titleTextView.font = defualtTitleFont
         }
         else {
             NotificationCenter.default.post(name: .nativeVideoPlayerChangeToPip, object: nil, userInfo: nil)
-            // pipButton.setImage(pipinImage, for: .normal)
+            pipButton.setImage(fullScreenImage, for: .normal)
             closeButton.isHidden = true
             controlsStack.isHidden = true
             handleCloseSideMenu()
