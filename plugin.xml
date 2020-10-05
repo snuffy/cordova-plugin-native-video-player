@@ -81,10 +81,18 @@
       </feature>
       <preference name="deployment-target" value="11.0" />
     </config-file>
+    <config-file target="*-Info.plist" parent="UIBackgroundModes">
+      <array>
+        <string>audio</string>
+      </array>
+    </config-file>
 
     <header-file src="src/ios/CDVNativeVideoPlayer-Bridging-Header.h" />
-    <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
     <source-file src="src/ios/CDVNativeVideoPlayerViewController.swift" />
+    <source-file src="src/ios/CDVNativeVideoPlayer.swift" />
+    <source-file src="src/ios/CDVNativeVideoPlayerPlayerView.swift" />
+    <source-file src="src/ios/CDVNativeVideoPlayerExtension.swift" />
+    <source-file src="src/ios/CDVNativeVideoPlayerSideMenuView.swift" />
     <source-file src="src/ios/CDVNVPResourcesLoader.swift" />
 
     <header-file src="src/ios/UIViewController+RotationControl.h" />
@@ -98,10 +106,7 @@
         <source url="https://github.com/CocoaPods/Specs.git"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="SnapKit" spec="~> 5.0.0" />
         <pod name="PIPKit" spec="~> 0.2.0" />
-        <pod name="SJBaseVideoPlayer" options=":git => 'https://github.com/changsanjiang/SJBaseVideoPlayer.git'"/>
-        <pod name="SJVideoPlayer" options=":git => 'https://github.com/changsanjiang/SJVideoPlayer.git'"/>
       </pods>
     </podspec>
     <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
