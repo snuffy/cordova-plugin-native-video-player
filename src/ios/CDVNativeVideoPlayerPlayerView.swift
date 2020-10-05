@@ -169,7 +169,6 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
     // pip button
     lazy var pipButton: UIButton = {
         let button = UIButton(type: .system)
-//        guard let pipinImage = pipinImage else {return button}
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(pipinImage, for: .normal)
         button.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.7956095951)
