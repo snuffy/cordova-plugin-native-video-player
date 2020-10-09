@@ -123,6 +123,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        activity = this
         setContentView(resources.getIdentifier("activity_player", "layout", application.packageName))
 
         savedInstanceState?.also {
@@ -157,7 +158,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onStart() {
         super.onStart()
-
+        activity = this
         playerView?.let {
             it.setControllerVisibilityListener(this)
             it.setErrorMessageProvider(PlayerErrorMessageProvider())
