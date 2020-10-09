@@ -85,10 +85,12 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
     private var orientation: Int = Configuration.ORIENTATION_PORTRAIT
 
     // 通知マネージャー
-    private var playerNotificationManager: PlayerNotificationManager? = null
+    var playerNotificationManager: PlayerNotificationManager? = null
     private var notificationId = 123456
+    
 
     companion object {
+        var activity: PlayerActivity? = null
         // TAG
         private const val TAG = "PlayerActivity"
 
