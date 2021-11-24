@@ -25,6 +25,8 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
     let pipinImage = CDVNVPResoucesLoader().getImage(named: "pipin")!
     let fullScreenImage = CDVNVPResoucesLoader().getImage(named: "fullscreen")!
     
+    var defaultRotateValue : Int = UIInterfaceOrientation.portrait.rawValue
+    
     let titleTextView: UILabel = {
         var textView = UILabel()
         textView.textColor = .white
@@ -195,6 +197,9 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
         tap.numberOfTapsRequired = 1
         tap.delegate = self
         addGestureRecognizer(tap)
+        
+        // デフォルトの向きを入れる
+        defaultRotateValue = UIDevice.current.orientation.rawValue
 
         // バックグラウンドで再生する処理のセットアップ
         addRemoteCommandEvent()
@@ -248,6 +253,9 @@ class VideoPlayerView: UIView, UIGestureRecognizerDelegate {
         player?.replaceCurrentItem(with: nil)
         UIApplication.shared.endReceivingRemoteControlEvents()
         MPNowPlayingInfoCenter.default().nowPlayingInfo = [:]
+        
+//      向きを元に戻す
+        UIDevice.current.setValue(defaultRotateValue, forKey: "orientation")
         player = nil
     }
     
