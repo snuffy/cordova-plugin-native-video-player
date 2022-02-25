@@ -50,6 +50,7 @@ import com.google.android.exoplayer2.util.ErrorMessageProvider
 import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
+
 import com.google.gson.GsonBuilder
 import java.io.File
 import java.io.Serializable
@@ -433,9 +434,6 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
                                     },
                                     // 通知コントローラー
                                     object: PlayerNotificationManager.NotificationListener {
-                                        override fun onNotificationStarted(notificationId: Int, notification: Notification) {
-                                            startBackgroundNotification(notificationId, notification)
-                                        }
                                         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
                                             self.releasePlayer()
                                         }
@@ -520,7 +518,7 @@ class PlayerActivity : AppCompatActivity(), PlayerControlView.VisibilityListener
             release()
             player = null
             mediaSource = null
-            trackSelector = null
+//            trackSelector = null
         }
 
         adsLoader?.apply {
