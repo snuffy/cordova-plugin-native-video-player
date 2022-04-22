@@ -30,13 +30,24 @@ import PIPKit
             
             // source が web なのか file なのかを判定する
             let regularURL = source.replacingOccurrences(of: "file://", with: "")
+     
+  
             var url: URL?
             //
             if regularURL.contains("http://") || regularURL.contains("https://") {
                 url = URL(string: regularURL)
             }
             else {
-                url = URL(fileURLWithPath: regularURL)
+                if (regularURL.contains("NoCloud")) {
+                    let rootPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].absoluteString.replacingOccurrences(of: "Documents/", with: "Library")
+                    let path = regularURL.components(separatedBy: "NoCloud")[1]
+                    let p = "\(rootPath)/NoCloud\(path)"
+                    url = URL(fileURLWithPath: p.replacingOccurrences(of: "file://", with: ""))
+                }
+                else {
+                    url = URL(fileURLWithPath: regularURL)
+                }
+
             }
             guard let sourceURL = url else {return}
             
