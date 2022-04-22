@@ -31,4 +31,5 @@
     <string name="exo_controls_seek_preview_description">PreviewImage Seeking</string>
     <string name="exo_controls_rate_description">Rate Changing</string>
     <string name="exo_controls_close_description">Close</string>
+    <string name="exo_controls_fullscreen_description">Full Screen</string>
 </resources>
