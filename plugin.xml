@@ -26,25 +26,6 @@
         <uses-permission android:name="android.permission.WAKE_LOCK" />
     </config-file>
 
-    <config-file target="AndroidManifest.xml" parent="/manifest/application" mode="merge">
-        <activity
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-            android:name="jp.rabee.PlayerActivity"
-            android:theme="@style/PlayerTheme"
-            android:label="PlayerActivity"
-            android:launchMode="singleTask"
-            android:resizeableActivity="true"
-            android:supportsPictureInPicture="true"
-            android:exported="true"
-            tools:targetApi="n">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-    </config-file>
-
-
     <!-- soruce -->
     <source-file src="src/android/java/CDVNativeVideoPlayer.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
     <source-file src="src/android/java/GlideThumbnailTransformation.kt" target-dir="app/src/main/kotlin/jp/rabee"/>
